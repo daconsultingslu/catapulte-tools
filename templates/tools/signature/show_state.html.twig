@@ -1,0 +1,9 @@
+<a href="{{ path('signature_tool_sign', {'event': event.id, 'tool': tool.id, 'session': session.id, 'user': user.id}) }}">
+    {% if not signature %}
+        <span class="oi oi-eyedropper" title="icon eyedropper" aria-hidden="true"></span>
+    {% elseif signature.isOff %}
+        <span class="oi oi-circle-x" title="icon circle-x" aria-hidden="true"></span>
+    {% else %}
+        <span class="oi oi-circle-check" title="icon circle-check" aria-hidden="true"></span>
+    {% endif %}
+</a>

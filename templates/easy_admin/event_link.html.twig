@@ -1,0 +1,3 @@
+{% block event_link %}
+    <a target="_blank" href="{{ path('event_show', {'event': entity.instance.id}) }}">{{ field.value }}</a>
+{% endblock %}

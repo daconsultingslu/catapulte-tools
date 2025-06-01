@@ -1,0 +1,59 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Nuage de mots</h1>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        <h2 class="text-center">{{ tool.baseline }}</h2>
+
+        {{ form_start(form, {attr: {class: 'form--word-cloud-tool'}}) }}
+        {{ form_widget(form) }}
+            <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+      var words = [
+        {text: "Loremmmmmmmmmmm", weight: 13},
+        {text: "Ipsum", weight: 10.5},
+        {text: "Dolor", weight: 9.4},
+        {text: "Sit", weight: 8},
+        {text: "Amet", weight: 6.2},
+        {text: "Consectetur", weight: 5},
+        {text: "Lorem", weight: 13},
+        {text: "Ipsum", weight: 10.5},
+        {text: "Dolor", weight: 9.4},
+        {text: "Sit", weight: 8},
+        {text: "Amet", weight: 6.2},
+        {text: "Consectetur", weight: 5},
+        {text: "Lorem", weight: 13},
+        {text: "Ipsum", weight: 10.5},
+        {text: "Dolor", weight: 9.4},
+        {text: "Sit", weight: 8},
+        {text: "Amet", weight: 6.2},
+        {text: "Consectetur", weight: 5},
+        {text: "Adipiscing", weight: 5}
+      ];
+
+      $('.word-cloud').jQCloud(words, {
+        'removeOverflowing': false
+      });
+
+      $(document).on('click', '.jqcloud-word', function(){
+        var fontSize = parseInt($(this).css('font-size'));
+        $(this).css({
+          'font-size': (fontSize + 5) + 'px',
+          'color': 'red'
+        });
+      });
+
+    </script>
+{% endblock %}
+

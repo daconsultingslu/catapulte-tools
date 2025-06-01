@@ -1,0 +1,741 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block main %}
+    <div id="game"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+    <script>
+        var data = {{ data|raw }};
+
+        var teamName = 'Score';
+        var teamId = 0;
+
+        var levels = data;
+
+        var colors = [
+            {
+                color: 'button01',
+                word: 'word01'
+            },
+            {
+                color: 'button02',
+                word: 'word02'
+            },
+            {
+                color: 'button03',
+                word: 'word03'
+            },
+            {
+                color: 'button04',
+                word: 'word04'
+            }
+        ];
+
+        var totalScore = 0;
+
+        var verticalPositions = [-50, -100, -150];
+
+        var navHeight = $('.navbar').innerHeight();
+        $('#game').css('margin-top', navHeight + 'px');
+
+        var worldHeight = window.innerHeight - navHeight;
+        var worldWidth = window.innerWidth;
+
+        var timePerLevel = 2.5; // minutes
+        var timeText;
+        var timedEvent;
+
+
+        var StartScene = new Phaser.Class({
+
+            Extends: Phaser.Scene,
+
+            initialize:
+
+            function StartScene ()
+            {
+                Phaser.Scene.call(this, { key: 'startScene' });
+            },
+
+            init ()
+            {
+                this.startText = null;
+                this.buttons = [];
+            },
+
+            preload ()
+            {
+                this.load.image('button01', "{{ asset('img/tetris/button01.png') }}");
+                this.load.image('button02', "{{ asset('img/tetris/button02.png') }}");
+                this.load.image('button03', "{{ asset('img/tetris/button03.png') }}");
+                this.load.image('button04', "{{ asset('img/tetris/button04.png') }}");
+                this.load.image('disabledButton', "{{ asset('img/tetris/button--disabled.png') }}");
+            },
+
+            create ()
+            {
+                var textConfig = {
+                    x: 0,
+                    y: 0,
+                    text: 'Choisis un niveau',
+                    style: {
+                        fontSize: '64px',
+                        fontFamily: 'Arial',
+                        color: '#fff',
+                        align: 'center',
+                        padding: {
+                            left: 50,
+                            right: 50,
+                            top: 20,
+                            bottom: 20,
+                        }
+                    }
+                };
+
+                this.startText = this.make.text(textConfig);
+
+                /***** MENU *****/
+                var rect = new Phaser.Geom.Rectangle(0, 0, worldWidth, 100);
+                var graphics = this.add.graphics({ fillStyle: { color: 0xffffff } });
+                graphics.fillRectShape(rect);
+
+                var counter = 0;
+                levels.forEach(level => {
+                    level.id = counter;
+                    level.active = false;
+                    var menuButton = this.add.sprite(worldWidth - (75 + 150 * counter), 50, colors[(counter % 4)].color);
+                    
+                    var style = { font: "24px Arial", fill: "#ffffff", wordWrap: { width: menuButton.width, useAdvancedWrap: true }, align: "center" };
+                    var text = this.add.text(0, 0, level.levelName, style);
+
+                    menuButton.customText = text;
+
+                    menuButton.setInteractive();
+
+                    menuButton.on('pointerdown', () => {
+                        level.active = true;
+
+                        // Start scene : pass tab index in data
+                        this.scene.start('mainScene', {
+                            level: level
+                        });
+                    });  
+
+                    this.buttons.push(menuButton);
+                    counter++;
+                });
+                /***** MENU *****/
+            },
+
+            update ()
+            {
+                this.startText.x = Math.floor(worldWidth / 2 - this.startText.width / 2);
+                this.startText.y = Math.floor(worldHeight / 2 - this.startText.height / 2);
+
+                this.buttons.forEach(button => {
+                    button.customText.x = Math.floor(button.x - button.customText.width / 2);
+                    button.customText.y = Math.floor(button.y - button.customText.height / 2);
+                });
+            },
+        });
+
+
+        var GameOverScene = new Phaser.Class({
+
+            Extends: Phaser.Scene,
+
+            initialize:
+
+            function GameOverScene ()
+            {
+                Phaser.Scene.call(this, { key: 'gameOverScene' });
+            },
+
+            init (data)
+            {
+                this.level = data.level;
+                this.initialTime = data.leavingTime;
+            },
+
+            create ()
+            {
+                var worldHeight = window.innerHeight;
+                var worldWidth = window.innerWidth;
+
+                var restartHeight = 100;
+                var restartWidth = worldWidth / 4;
+
+                var textConfig = {
+                    x: worldWidth / 2 - restartWidth / 2,
+                    y: worldHeight / 2 - restartHeight * 1.5,
+                    text: 'Vous avez perdu',
+                    style: {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#fff',
+                        align: 'center',
+                        fixedWidth: restartWidth,
+                        fixedHeight: restartHeight
+                    }
+                };
+
+                this.make.text(textConfig);
+
+                var buttonConfig = {
+                    x: worldWidth / 2 - restartWidth / 2,
+                    y: worldHeight / 2 - restartHeight / 2,
+                    text: 'Rejouer !',
+                    style: {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#000',
+                        align: 'center',
+                        backgroundColor: '#fff',
+                        padding: {
+                            left: 50,
+                            right: 50,
+                            top: 20,
+                            bottom: 20,
+                        },
+                        fixedWidth: restartWidth,
+                        fixedHeight: restartHeight
+                    }
+                };
+
+                var restartButton = this.make.text(buttonConfig);
+                restartButton.setInteractive();
+
+                restartButton.on('pointerdown', () => {
+                    this.scene.start('mainScene', {
+                        level: this.level,
+                        leavingTime: this.initialTime
+                    });
+                });     
+            }
+        });
+
+
+        var EndGameScene = new Phaser.Class({
+
+            Extends: Phaser.Scene,
+
+            initialize:
+
+            function EndGameScene ()
+            {
+                Phaser.Scene.call(this, { key: 'endGameScene' });
+            },
+
+            init ()
+            {
+                $.ajax({
+                    'url': Routing.generate('tetris_tool_save_score', { event: {{ event.id }}, tool: {{ tool.id }}, user: {{ user.id }}, score: totalScore }),
+                    'type': 'post',
+                    'success': function(result, status, xhr) {
+                    },
+                    'error': function(xhr, status, error) {
+                    }
+                });
+            },
+
+            create ()
+            {
+                var worldHeight = window.innerHeight;
+                var worldWidth = window.innerWidth;
+
+                var restartHeight = 100;
+                var restartWidth = worldWidth / 4;
+
+                var textConfig = {
+                    x: worldWidth / 2 - restartWidth / 2,
+                    y: worldHeight / 2 - restartHeight * 1.5,
+                    text: 'Votre score final est de ' + totalScore + ', bravo !',
+                    style: {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#fff',
+                        align: 'center',
+                        fixedWidth: restartWidth,
+                        fixedHeight: restartHeight
+                    }
+                };
+
+                this.make.text(textConfig);
+
+                var buttonConfig = {
+                    x: worldWidth / 2 - restartWidth / 2,
+                    y: worldHeight / 2 - restartHeight / 2,
+                    text: 'Rejouer !',
+                    style: {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#000',
+                        align: 'center',
+                        backgroundColor: '#fff',
+                        padding: {
+                            left: 50,
+                            right: 50,
+                            top: 20,
+                            bottom: 20,
+                        },
+                        fixedWidth: restartWidth,
+                        fixedHeight: restartHeight
+                    }
+                };
+
+                var restartButton = this.make.text(buttonConfig);
+                restartButton.setInteractive();
+
+                restartButton.on('pointerdown', () => {
+                    this.scene.start('startScene');
+                });   
+            }
+        });
+
+
+        var NextLevelScene = new Phaser.Class({
+
+            Extends: Phaser.Scene,
+
+            initialize:
+
+            function NextLevelScene ()
+            {
+                Phaser.Scene.call(this, { key: 'nextLevelScene' });
+            },
+
+            init: function () 
+            {
+                this.buttons = [];
+                this.scoreText;
+
+                // Send score
+                $.ajax({
+                    'url': Routing.generate('tetris_tool_save_score', { event: {{ event.id }}, tool: {{ tool.id }}, user: {{ user.id }}, score: totalScore }),
+                    'type': 'post',
+                    'success': function(result, status, xhr) {
+                    },
+                    'error': function(xhr, status, error) {
+                    }
+                });
+            },
+
+            create ()
+            {
+                var worldHeight = window.innerHeight;
+                var worldWidth = window.innerWidth;
+
+                var buttonHeight = 100;
+                var buttonWidth = worldWidth / 4;
+
+                var textConfig = {
+                    x: worldWidth / 2 - buttonWidth / 2,
+                    y: worldHeight / 2 - buttonHeight * 1.5,
+                    text: 'Bravo !',
+                    style: {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#fff',
+                        align: 'center',
+                        fixedWidth: buttonWidth,
+                        fixedHeight: buttonHeight
+                    }
+                };
+
+                this.make.text(textConfig);
+
+                var buttonConfig = {
+                    x: worldWidth / 2 - buttonWidth / 2,
+                    y: worldHeight / 2 - buttonHeight / 2,
+                    text: 'Niveau suivant',
+                    style: {
+                        fontSize: '32px',
+                        fontFamily: 'Arial',
+                        color: '#000',
+                        align: 'center',
+                        backgroundColor: '#fff',
+                        padding: {
+                            left: 50,
+                            right: 50,
+                            top: 20,
+                            bottom: 20,
+                        },
+                        fixedWidth: buttonWidth,
+                        fixedHeight: buttonHeight
+                    }
+                };
+
+                var nextButton = this.make.text(buttonConfig);
+                nextButton.setInteractive();
+
+                nextButton.on('pointerdown', () => {
+                    this.scene.start('mainScene', {
+                        id: this.nextSceneId,
+                        words: this.nextSceneWords
+                    });
+                });
+
+                var score = totalScore;
+                this.scoreText = this.add.text(152, 0, teamName + ': 0', { fontSize: '32px', fill: '#000' });
+                this.scoreText.depth = 10;
+                //console.log(scoreText);
+
+                /***** MENU *****/
+                var rect = new Phaser.Geom.Rectangle(0, 0, worldWidth, 100);
+                var graphics = this.add.graphics({ fillStyle: { color: 0xffffff } });
+                graphics.fillRectShape(rect);
+
+                var counter = 0;
+                levels.forEach(level => {
+                    level.id = counter;
+                    level.active = false;
+
+                    if(level.done) {
+                        var menuButton = this.add.sprite(worldWidth - (75 + 150 * counter), 50, 'disabledButton');
+                        var style = { font: "24px Arial", fill: "#000000", wordWrap: { width: menuButton.width, useAdvancedWrap: true }, align: "center" };
+                    }
+                    else {
+                        var menuButton = this.add.sprite(worldWidth - (75 + 150 * counter), 50, colors[(counter % 4)].color);
+                        var style = { font: "24px Arial", fill: "#ffffff", wordWrap: { width: menuButton.width, useAdvancedWrap: true }, align: "center" };
+                    
+                        menuButton.setInteractive();
+
+                        menuButton.on('pointerdown', () => {
+                            level.active = true;
+
+                            // Start scene : pass tab index in data
+                            this.scene.start('mainScene', {
+                                level: level
+                            });
+                        });  
+                    }
+
+                    var text = this.add.text(0, 0, level.levelName, style);
+
+                    menuButton.customText = text;
+
+                    this.buttons.push(menuButton);
+                    counter++;
+                });
+                /***** MENU *****/
+            },
+
+            update ()
+            {
+                this.buttons.forEach(button => {
+                    button.customText.x = Math.floor(button.x - button.customText.width / 2);
+                    button.customText.y = Math.floor(button.y - button.customText.height / 2);
+                });
+
+                this.scoreText.y = 50 - this.scoreText.height / 2;
+            }
+        });
+
+
+
+        var MainScene = new Phaser.Class({
+
+            Extends: Phaser.Scene,
+
+            initialize:
+
+            function MainScene ()
+            {
+                Phaser.Scene.call(this, { key: 'mainScene' });
+            },
+
+            init: function (data)
+            {
+                this.player; // Player object
+                this.cursors; // Keyboard controls
+                this.score = 0; // Player score
+                this.error = 0; // Number of errors
+                this.scoreText; // Text to display score
+                this.gameOver = false;
+                this.endWorld; // Game object to trigger falling game objects outside screen
+
+                this.level = data.level;
+
+                this.texts = []; // Array for texts
+                this.bricks = []; // Array for rectangles
+
+                this.worldHeight = window.innerHeight;
+                this.worldWidth = window.innerWidth;
+
+                this.buttons = [];
+
+                this.index = 0;
+
+                this.rand = 0;
+
+                this.initialTime = data.leavingTime == null ? this.initialTime = timePerLevel * 60 : data.leavingTime;
+            },
+
+            preload ()
+            {
+                this.load.image('car', "{{ asset('img/tetris/car.png') }}");
+
+                this.load.image('button01', "{{ asset('img/tetris/button01.png') }}");
+                this.load.image('word01', "{{ asset('img/tetris/word01.png') }}");
+
+                this.load.image('button02', "{{ asset('img/tetris/button02.png') }}");
+                this.load.image('word02', "{{ asset('img/tetris/word02.png') }}");
+
+                this.load.image('button03', "{{ asset('img/tetris/button03.png') }}");
+                this.load.image('word03', "{{ asset('img/tetris/word03.png') }}");
+
+                this.load.image('button04', "{{ asset('img/tetris/button04.png') }}");
+                this.load.image('word04', "{{ asset('img/tetris/word04.png') }}");
+
+                this.load.image('background', "{{ asset('img/tetris/background.png') }}");
+
+                this.load.image('disabledButton', "{{ asset('img/tetris/button--disabled.png') }}");
+            },
+
+            create ()
+            {
+                this.add.tileSprite(this.worldWidth / 2, this.worldHeight / 2, this.worldWidth, this.worldHeight, 'background');
+                
+                this.player = this.physics.add.image(this.worldWidth / 2, this.worldHeight, 'car');
+                this.player.setCollideWorldBounds(true);
+                this.player.setInteractive();
+
+                this.input.setDraggable(this.player);
+
+                this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
+                    gameObject.x = dragX;
+                });
+
+                this.endWorld = this.add.graphics();
+                this.endWorld.fillStyle(0xffffff, 1);  
+                this.endWorld.fillRoundedRect(0, this.worldHeight, this.worldWidth, 50, 5);
+                this.physics.add.existing(this.endWorld);
+                this.endWorld.setInteractive();
+                this.endWorld.body.allowGravity = false;
+                this.endWorld.body.offset.x = 0;
+                this.endWorld.body.offset.y = this.worldHeight;
+                this.endWorld.body.setSize(this.worldWidth, 50);
+
+                this.score = totalScore;
+                this.scoreText;
+                this.scoreText = this.add.text(152, 0, teamName + ': 0', { fontSize: '32px', fill: '#000' });
+                this.scoreText.depth = 10;
+
+                // Find active color
+                var activeColor;
+                var counter = 0;
+                levels.forEach(level => {
+                    if(level.active) {
+                        activeColor = colors[(counter % 4)];
+                    }
+                    counter++;
+                });
+    
+                this.rand = Phaser.Math.Between(0, 2);
+                var posY = verticalPositions[this.rand];
+                var color = '#fff';
+                var brick;
+                var brickWidth = 200;
+                var worldWidthDivided = worldWidth / 3;
+                var posX = worldWidthDivided;
+                for(var i = 0; i < 3; i++) {
+                    this.index = i;
+
+                    var posX = worldWidthDivided * (i + 1) - worldWidthDivided / 2;
+                    brick = this.add.sprite(posX, posY, activeColor.word);
+                    this.physics.add.existing(brick);
+                    //brick.body.offset.x = posX;
+                    //brick.body.offset.y = posY;
+                    //brick.body.setSize(brickWidth, 100);
+                    brick.body.velocity.y = 50;
+                    brick.body.setGravity(0, 10);
+                    brick.word = this.level.words[this.index];
+                    brick.touched = false;
+
+                    this.physics.add.overlap(this.player, brick, this.collectBrick, null, this);
+                    this.physics.add.overlap(this.endWorld, brick, this.dropBrick, null, this);
+
+                    this.bricks[i] = brick;
+
+                    text = this.add.text(0, 0, this.level.words[this.index].text, { fontSize: '16px', fill: color, wordWrap: { width: brickWidth * 0.9, useAdvancedWrap: true }, align: "center" });
+                    this.texts[i] = text;
+
+                    brick.textObject = text;
+
+                    posX += brickWidth * 2;
+                    this.rand = (this.rand + 1) % 3;
+                    posY = verticalPositions[this.rand];
+                }
+
+                /***** MENU *****/
+                var rect = new Phaser.Geom.Rectangle(0, 0, worldWidth, 100);
+                var graphics = this.add.graphics({ fillStyle: { color: 0xffffff } });
+                graphics.fillRectShape(rect);
+
+                counter = 0;
+                levels.forEach(level => {
+                    if(level.active) {
+                        var menuButton = this.add.sprite(worldWidth - (75 + 150 * counter), 50, activeColor.color);
+                        var style = { font: "24px Arial", fill: "#ffffff", wordWrap: { width: menuButton.width, useAdvancedWrap: true }, align: "center" };
+                    }
+                    else {
+                        var menuButton = this.add.sprite(worldWidth - (75 + 150 * counter), 50, 'disabledButton');
+                        var style = { font: "24px Arial", fill: "#000000", wordWrap: { width: menuButton.width, useAdvancedWrap: true }, align: "center" };
+                    }
+                    
+                    var text = this.add.text(0, 0, level.levelName, style);
+
+                    menuButton.customText = text;
+
+                    this.buttons.push(menuButton);
+                    counter++;
+                });
+                /***** MENU *****/
+
+                timeText = this.add.text(400, 50, formatTime(this.initialTime), {font: "24px Arial", fill: "#ff0000"});
+                // Each 1000 ms call onEvent
+                timedEvent = this.time.addEvent({ delay: 1000, callback: this.onEvent, callbackScope: this, loop: true });
+            },
+
+            update ()
+            {
+                this.cursors = this.input.keyboard.createCursorKeys();
+
+                if (this.cursors.left.isDown)
+                {
+                    this.player.setX(this.player.x - 5);
+                }
+                else if (this.cursors.right.isDown)
+                {
+                    this.player.setX(this.player.x + 5);
+                }
+
+                var enabled = false;
+                for(var i = 0; i < 3; i++) {
+                    this.texts[i].x = Math.floor(this.bricks[i].body.x) + this.bricks[i].body.width / 2 - this.texts[i].width / 2;
+                    this.texts[i].y = Math.floor(this.bricks[i].body.y) + this.bricks[i].body.height / 2 - this.texts[i].height / 2;
+
+                    if(!this.bricks[i].touched) {
+                        enabled = true;
+                    }
+                }
+
+                if(!enabled) {
+                    this.rand = Phaser.Math.Between(0, 2);
+                    for(var i = 0; i < 3; i++) {
+                        this.reinitializeBrick(this.bricks[i]);
+                        this.rand = (this.rand + 1) % 3;
+                    }
+                }
+
+                this.scoreText.y = 50 - this.scoreText.height / 2;
+
+                this.buttons.forEach(button => {
+                    button.customText.x = Math.floor(button.x - button.customText.width / 2);
+                    button.customText.y = Math.floor(button.y - button.customText.height / 2);
+                });
+
+                timeText.x = this.scoreText.x + this.scoreText.width + 100;
+                timeText.y = 50 - timeText.height / 2;
+            },
+
+            collectBrick (player, brick)
+            {
+                if(!brick.word.fault) {
+                    this.score += 1;
+                }
+                else {
+                    this.error++;
+                }
+
+                if(this.error > 1) {
+                    this.scene.start('gameOverScene', {
+                        level: this.level,
+                        leavingTime: this.initialTime
+                    });
+                }
+
+                this.scoreText.setText(teamName + ': ' + this.score);
+
+                this.dropBrick(this.endWorld, brick);
+            },
+
+            dropBrick(endWorld, brick)
+            {
+                brick.touched = true;
+                brick.setY(-2000);
+                brick.body.velocity.y = 0;
+                brick.body.setGravity(0, 0);
+            },
+
+            reinitializeBrick(brick) {
+                this.index++;
+
+                if(this.index >= this.level.words.length) {
+                    this.level.done = true;
+                    totalScore += this.score;
+
+                    var done = true;
+                    levels.forEach(level => {
+                        if(!level.done) {
+                            done = false;
+                        }
+                    });
+
+                    if(!done) {
+                        this.scene.start('nextLevelScene');
+                    }
+                    else {
+                        this.scene.start('endGameScene');
+                    }
+                }
+
+                brick.textObject.text = this.level.words[this.index].text;
+                brick.word = this.level.words[this.index];
+
+                brick.setY(verticalPositions[this.rand]);
+                brick.body.velocity.y = 50;
+                brick.body.setGravity(0, 10);
+                brick.touched = false;
+            },
+
+            onEvent ()
+            {
+                this.initialTime -= 1; // One second
+                timeText.setText(formatTime(this.initialTime));
+            }
+        });
+
+
+        var config = {
+            type: Phaser.AUTO,
+            parent: 'game',
+            width: worldWidth,
+            height: worldHeight,
+            backgroundColor: '#000000',
+            scene: [ StartScene, MainScene, GameOverScene, EndGameScene, NextLevelScene ],
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 1 }
+                }
+            },
+        };
+
+        function formatTime(seconds){
+            // Minutes
+            var minutes = Math.floor(seconds/60);
+            // Seconds
+            var partInSeconds = seconds%60;
+            // Adds left zeros to seconds
+            partInSeconds = partInSeconds.toString().padStart(2,'0');
+            // Returns formated time
+            return `${minutes}:${partInSeconds}`;
+        }
+
+        var game = new Phaser.Game(config);
+    </script>
+{% endblock %}

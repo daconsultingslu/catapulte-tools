@@ -1,0 +1,57 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Nuage de mots</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span data-feather="calendar"></span>
+                Groupe {{ group.name }}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% for g in groupEvents %}
+                    <a class="dropdown-item" href="{{ path('word_cloud_tool_show_group', {'event': event.id, 'tool': tool.id, 'group': g.id}) }}">
+                        Groupe {{ g.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <h2 class="text-center">{{ tool.baseline }}</h2>
+    <div class="hidden">
+        {% for word, number in words %}
+            <div class="word-ready" data-word="{{ word }}" data-number="{{ number }}"></div>
+        {% endfor %}
+    </div>
+    <div class="word-cloud"></div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        var words = new Array();
+        $('.word-ready').each(function(){
+          words.push(
+              {
+                text: $(this).data('word'),
+                weight: $(this).data('number')
+              }
+          )
+        });
+
+      $('.word-cloud').jQCloud(words, {
+        'removeOverflowing': false
+      });
+
+      $(document).on('click', '.jqcloud-word', function(){
+        var fontSize = parseInt($(this).css('font-size'));
+        $(this).css({
+          'font-size': (fontSize + 5) + 'px',
+          'color': 'red'
+        });
+      });
+
+    </script>
+{% endblock %}
+

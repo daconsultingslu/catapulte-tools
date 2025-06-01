@@ -1,0 +1,33 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{{ tool.name }}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+                <a href="{{ path('export_all_surveys', { 'event': event.id, 'tool': tool.id }) }}" class="btn btn-sm btn-outline-secondary">
+                    Exporter toutes les sessions
+                </a>
+            </div>
+            <div class="btn-group mr-2">
+                <a href="{{ path('export_surveys', { 'event': event.id, 'session': session.id, 'tool': tool.id }) }}" class="btn btn-sm btn-outline-secondary">
+                    Exporter
+                </a>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span data-feather="calendar"></span>
+                {% if session is null %}
+                    {% set s = event.sessions[0] %}
+                    Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }} à {{ s.place }}
+                {% else %}
+                    Session du {{ session.startDate|date("d/m", "Europe/Paris") }} au {{ session.endDate|date("d/m/Y", "Europe/Paris") }} à {{ session.place }}
+                {% endif %}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% for s in event.sessions %}
+                    <a class="dropdown-item" href="{{ path('survey_tool_show_session', {'event': event.id, 'tool': tool.id, 'session': s.id}) }}">Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }} à {{ s.place }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

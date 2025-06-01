@@ -1,0 +1,17 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+    <div class="pt-3 pb-2 mb-3">
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {{ form_row(form.firstname) }}
+        {{ form_row(form.lastname) }}
+        {{ form_row(form.concessionCode) }}
+        {{ form_row(form.details) }}
+        {{ form_row(form.groupEvent) }}
+        <div>
+            <input type="submit" value="Ajouter" />
+        </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

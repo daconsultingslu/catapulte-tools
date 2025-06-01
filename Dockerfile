@@ -22,6 +22,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	file \
 	gettext \
 	git \
+	libfreetype6-dev \
+	libjpeg62-turbo-dev \
+	libpng-dev \
+	libwebp-dev \
+	libxpm-dev \
+	zlib1g-dev \
+	libonig-dev \
+	libxml2-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -31,7 +39,19 @@ RUN set -eux; \
 		intl \
 		opcache \
 		zip \
-	;
+	; \
+	docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-install -j$(nproc) gd; \
+    docker-php-ext-enable gd; \
+    php -m | grep gd
+
+RUN set -eux; \
+    php --ini; \
+    mkdir -p /usr/local/etc/php/conf.d/; \
+    echo "extension=gd.so" > /usr/local/etc/php/conf.d/gd.ini; \
+    php -m | grep gd
+
+RUN php -r "var_dump(extension_loaded('gd'));"
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -39,6 +59,9 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
 ###> recipes ###
+###> doctrine/doctrine-bundle ###
+RUN install-php-extensions pdo_pgsql
+###< doctrine/doctrine-bundle ###
 ###< recipes ###
 
 COPY --link frankenphp/conf.d/10-app.ini $PHP_INI_DIR/app.conf.d/

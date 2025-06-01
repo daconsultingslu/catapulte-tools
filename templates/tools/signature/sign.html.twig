@@ -1,0 +1,91 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            {% if step == 1 and tool.isMultiSignatures %}
+                Signature Demi journée 1
+            {% elseif step == 2 and tool.isMultiSignatures %}
+                Signature Demi journée 2
+            {% else %}
+                Signature
+            {% endif %}
+        </h1>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        <h2>{{ user.firstname ~ ' ' ~ user.lastname }}</h2>
+        <div class="wrapper">
+            <canvas id="signature-pad" class="signature-pad" width=400 height=200></canvas>
+        </div>
+        <div id="signature-content" class="d-none">{{ signature }}</div>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        {{ form_start(form, {attr: {class: 'form--signature-tool--signature'}}) }}
+            {{ form_widget(form) }}
+            
+            <button id="clear" type="button" class="btn btn-dark">Effacer</button>
+            <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        var canvas = document.getElementById('signature-pad');
+        var isOff = $('#signature_isOff');
+        var signature = document.getElementById('signature_signature');
+        var reason = $('#signature_reason');
+
+        function resizeCanvas() {
+            var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+        }
+
+        window.onresize = resizeCanvas;
+        resizeCanvas();
+
+        var signaturePad = new signature_pad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+        var blank_val = signaturePad.toDataURL();
+
+        // Get existing
+        var signatureContent = document.getElementById('signature-content').textContent;
+        if (signatureContent != '') {
+            signaturePad.fromDataURL(signatureContent);
+        }
+
+        document.getElementById('clear').addEventListener('click', function () {
+            signaturePad.clear();
+        });
+
+        $('.form--signature-tool--signature').on('submit', function(e) {
+
+          if(isOff.is(':checked')) {
+            if(reason.val() == ''){
+              alert('Veuillez renseigner une raison');
+              return false;
+            }
+            signature.value = '';
+          }
+          else if(signaturePad.toDataURL() == blank_val) {
+            alert('Aucune signature trouvée');
+            return false;
+          }
+          else {
+            var image = signaturePad.toDataURL();
+            signature.value = image;
+          }
+
+          return true;
+
+        });
+    </script>
+{% endblock %}

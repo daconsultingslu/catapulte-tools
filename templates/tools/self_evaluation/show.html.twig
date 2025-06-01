@@ -1,0 +1,93 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">{{ tool.name }}</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group mr-2">
+                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                        Exporter
+                    </a>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span data-feather="calendar"></span>
+                    Groupe {{ group.name }}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for g in groupEvents %}
+                        <a class="dropdown-item" href="{{ path('self_evaluation_tool_show_group', {'event': event.id, 'tool': tool.id, 'group': g.id}) }}">
+                            Groupe {{ g.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-3 pb-2 mb-3">
+            <div class="hidden">
+                {% for criteria in averages %}
+                    <div class="self-evaluation-averages-ready" data-step="averages" data-criteria="{{ criteria.name }}" data-avg="{{ criteria.note_avg }}"></div>
+                {% endfor %}
+            </div>
+            <div style="width: 800px;margin: auto;text-align: center;">
+                <canvas id="myChart"></canvas>
+            </div>
+            <div>
+                <ul>
+                {% for criteria in averages %}
+                    <li><strong>{{ criteria.name }}</strong> : {{ criteria.note_avg }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+      var labels = new Array();
+      var averages = new Array();
+
+      $('.self-evaluation-averages-ready').each(function(){
+        labels.push($(this).data('criteria'));
+        averages.push($(this).data('avg'));
+      });
+
+      var ctx = document.getElementById("myChart");
+      var myChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: labels,
+          fontSize: 16,
+          datasets: [
+            {
+              label: "Moyennes",
+              fill: true,
+              backgroundColor: "rgba(179,181,198,0.2)",
+              borderColor: "rgba(179,181,198,1)",
+              pointBorderColor: "#fff",
+              pointBackgroundColor: "rgba(179,181,198,1)",
+              data: averages
+            }
+          ]
+        },
+        options: {
+          title: {
+            display: true,
+            text: 'Résultats',
+            fontSize: 16
+          },
+          scale: {
+            pointLabels: {
+              fontSize: 14
+            },
+            ticks: {
+              beginAtZero: true,
+              min: 0,
+              max: 10
+            }
+          }
+        }
+      });
+    </script>
+{% endblock %}

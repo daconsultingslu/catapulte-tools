@@ -1,0 +1,53 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{{ tool.name }}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group mr-2">
+                <a href="{{ path('trial_tool_show_number_plates', {'event': event.id, 'tool': tool.id, 'session': session.id}) }}" class="btn btn-sm btn-outline-secondary">Plaques</a>
+                <a href="{{ path('export_trials', {'event': event.id, 'session': session.id, 'tool': tool.id}) }}" class="btn btn-sm btn-outline-secondary">Exporter</a>
+                <a href="{{ path('trial_tool_recalculate', {'event': event.id, 'session': session.id, 'tool': tool.id}) }}" class="btn btn-sm btn-outline-secondary">Recalculer les fins d'essais</a>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span data-feather="calendar"></span>
+                {% if session is null %}
+                    {% set s = event.sessions[0] %}
+                    Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }} à {{ s.place }}
+                {% else %}
+                    Session du {{ session.startDate|date("d/m", "Europe/Paris") }} au {{ session.endDate|date("d/m/Y", "Europe/Paris") }} à {{ session.place }}
+                {% endif %}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% for s in event.sessions %}
+                    <a class="dropdown-item" href="{{ path('trial_tool_show_session', {'event': event.id, 'tool': tool.id, 'session': s.id}) }}">Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }} à {{ s.place }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Immatriculation</th>
+                <th>Essai</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for trialUserData in trialUserDatas %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ trialUserData.userData.user.lastname }}</td>
+                    <td>{{ trialUserData.userData.user.firstname }}</td>
+                    <td>{{ trialUserData.numberPlate.numberPlate }}</td>
+                    <td>Du {{ trialUserData.created|date("d/m/Y h:i:s", "Europe/Paris") }} au {{ trialUserData.updated|date("d/m/Y h:i:s", "Europe/Paris") }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

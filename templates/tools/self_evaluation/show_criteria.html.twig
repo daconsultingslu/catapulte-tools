@@ -1,0 +1,27 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{{ tool.name }}</h1>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        <h2>{{ criteria.name }}</h2>
+        {{ form_start(form, {attr: {class: 'form--self-evaluation-tool'}}) }}
+        {{ form_widget(form) }}
+        <div class="range-value mb-4 text-center">Note : <span>5</span></div>
+        <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        $('input[type="range"]').on('change', function(){
+          $('.range-value span').html($(this).val());
+        });
+    </script>
+{% endblock %}

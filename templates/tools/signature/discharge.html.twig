@@ -1,0 +1,212 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    {% if event.language == 'en' %}
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Waiver form</h1>
+        </div>
+
+        <div class="pt-3 pb-2 mb-3">
+            <h2>Test Drives - {{ event.name }}</h2>
+            <p>
+                <strong>Place :</strong> {{ session.place }}
+            </p>
+            <p>
+                <strong>Date :</strong> From {{ event.startDate|date('d/m/Y') }} to {{ event.endDate|date('d/m/Y') }}
+            </p>
+            <p>
+                <strong>Training schedule:</strong> {{ tool.hours }}
+            </p>
+            <p class="mt-3">
+                I, the undersigned,
+            </p>
+            <p>
+                <strong>Name :</strong> {{ user.lastname }}
+            </p>
+            <p>
+                <strong>First name :</strong> {{ user.firstname }}
+            </p>
+            <p>
+                certify that :
+            </p>
+            <ul>
+                <li>
+                    I have been holding a driving licence for more than 3 years and/or that I am older
+                    than 21
+                </li>
+                <li>
+                    I am civilly and penally responsible for the vehicle I drive and I commit to using it
+                    carefully.
+                </li>
+                <li>
+                    I am personally responsible for any violation of highway law this vehicle could be
+                    involved in. I would take any legal, criminal or financial consequences and I
+                    commit myself to pay any fine, which could be dued. All fines occurring during the
+                    car lending will be sent to my employer.
+                </li>
+                <li>
+                    I commit to following all the security rules during the test drives.
+                </li>
+                <li>
+                    The insurance franchise will be charged to the responsible of the accident.
+                </li>
+                <li>
+                    In the event of mortgage defaults by myself, I will receive fines potentially
+                    increased in my home. I already allow {{ event.brand.name }} to communicate my personal co-
+                    ordinates to any administration which would ask for, as the result of an offence.
+                </li>
+            </ul>
+        </div>
+
+        <div class="pt-3 pb-2 mb-3">
+            <div class="wrapper">
+                <canvas id="signature-pad" class="signature-pad" width=400 height=200></canvas>
+            </div>
+        </div>
+
+        <div class="pt-3 pb-2 mb-3">
+
+            {{ form_start(form, {attr: {class: 'form--signature-tool--signature'}}) }}
+            {{ form_widget(form) }}
+            <button id="clear" type="button" class="btn btn-dark">Effacer</button>
+            <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
+            {{ form_end(form) }}
+        </div>
+    {% else %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Décharge essais</h1>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        <h2>Test Routiers - {{ event.name }}</h2>
+        <p>
+            <strong>Lieu :</strong> {{ session.place }}
+        </p>
+        <p>
+            <strong>Date :</strong> Du {{ event.startDate|date('d/m/Y') }} au {{ event.endDate|date('d/m/Y') }}
+        </p>
+        <p>
+            <strong>Horaires :</strong> {{ tool.hours }}
+        </p>
+        <p class="mt-3">
+            Je soussigné,
+        </p>
+        <p>
+            <strong>Nom :</strong> {{ user.lastname }}
+        </p>
+        <p>
+            <strong>Prénom :</strong> {{ user.firstname }}
+        </p>
+        <p>
+            certifie que :
+        </p>
+        <ul>
+            <li>
+                Être titulaire du Permis de conduire depuis plus de 3 ans et/ou avoir plus de 21 ans
+            </li>
+            <li>
+                Accepter les termes et conditions mentionnés ci-dessous
+                <ul>
+                    <li>
+                        Civilement et pénalement responsable du véhicule dont la présente me constitue gardien, je m’engage à utiliser ce véhicule avec clairvoyance.
+                    </li>
+                    <li>
+                        Je m’engage à être titulaire d’un permis valide pour ce véhicule.
+                    </li>
+                    <li>
+                        Je suis personnellement responsable de toute infraction au Code de la Route dans laquelle ce véhicule sera impliqué. J’en supporterai les conséquences, tant juridiques et pénales que financières, et je m’engage sur l’honneur à régler les contraventions aussitôt que celles-ci deviendront exigibles.
+                    </li>
+                    <li>
+                        Je m’engage à respecter les consignes de sécurité que l’on me donnera lors des essais routiers, et à n’avoir en aucun cas une attitude pouvant entraîner un danger pour autrui.
+                    </li>
+                    <li>
+                        La franchise de l’assurance sera à la charge du responsable du sinistre
+                    </li>
+                    <li>
+                        Conformément à la nouvelle réglementation, {{ event.brand.name }} mettra à disposition des autorités le Nom, prénom des conducteurs responsables des infractions.
+                    </li>
+                    <li>
+                        Je déclare ne pas être sous l’emprise d’alcool ou de drogue pendant les essais.
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        <div class="wrapper">
+            <canvas id="signature-pad" class="signature-pad" width=400 height=200></canvas>
+        </div>
+        <div id="signature-content" class="d-none">{{ signature }}</div>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+
+        {{ form_start(form, {attr: {class: 'form--signature-tool--signature'}}) }}
+        {{ form_widget(form) }}
+        <button id="clear" type="button" class="btn btn-dark">Effacer</button>
+        <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
+        {{ form_end(form) }}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+      var canvas = document.getElementById('signature-pad');
+      var isOff = $('#signature_isOff');
+      var signature = document.getElementById('signature_signature');
+      var reason = $('#signature_reason');
+
+      function resizeCanvas() {
+        var ratio =  Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+      }
+
+      window.onresize = resizeCanvas;
+      resizeCanvas();
+
+      var signaturePad = new signature_pad(canvas, {
+        backgroundColor: 'rgb(255, 255, 255)'
+      });
+      var blank_val = signaturePad.toDataURL();
+
+      // Get existing
+      var signatureContent = document.getElementById('signature-content').textContent;
+      if (signatureContent != '') {
+        signaturePad.fromDataURL(signatureContent);
+      }
+
+      document.getElementById('clear').addEventListener('click', function () {
+        signaturePad.clear();
+      });
+
+      $('.form--signature-tool--signature').on('submit', function(e) {
+
+        if(isOff.is(':checked')) {
+          if(reason.val() == ''){
+            alert('Veuillez renseigner une raison');
+            return false;
+          }
+          signature.value = '';
+        }
+        else if(signaturePad.toDataURL() == blank_val) {
+          alert('Aucune signature trouvée');
+          return false;
+        }
+        else {
+          var image = signaturePad.toDataURL();
+          signature.value = image;
+        }
+
+        return true;
+
+      });
+    </script>
+{% endblock %}
+

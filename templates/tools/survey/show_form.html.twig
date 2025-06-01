@@ -1,0 +1,23 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% form_theme form 'bootstrap_4_layout.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">{{ tool.name }}</h1>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3 col-12">
+        <div class="question mb-4">
+            <h3 class="mb-3">{{ question.name }}</h3>
+            {{ form_start(form, {attr: {class: 'form--satisfaction-survey-tool'}}) }}
+            {{ form_widget(form) }}
+            <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
+
+            {% if question.canBeSkipped %}
+                <a href="{{ path('survey_tool_skip_question', {'event': event.id, 'tool': tool.id, 'question': question.id}) }}" class="btn btn-secondary my-1 btn--submit">Passer à la question suivante</a>
+            {% endif %}
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

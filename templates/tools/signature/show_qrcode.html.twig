@@ -1,0 +1,172 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Qr Codes</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            {% if session is null %}
+                {% set s = event.sessions[0] %}
+            {% else %}
+                {% set s = session %}
+            {% endif %}
+            <div class="btn-group mr-2">
+                <a href="{{ path('signature_tool_show_session', { 'event': event.id, 'session': s.id, 'tool': tool.id }) }}" class="btn btn-sm btn-outline-secondary">
+                    Emargement
+                </a>
+                <button type="button" class="generate--pdf btn btn-sm btn-outline-secondary">
+                    Générer les QR Codes
+                </button>
+                <button type="button" class="download--pdf btn btn-sm btn-outline-secondary">
+                    Télécharger les QR Codes
+                </button>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span data-feather="calendar"></span>
+                {% if session is null %}
+                    {% set s = event.sessions[0] %}
+                    Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }} à {{ s.place }}
+                {% else %}
+                    Session du {{ session.startDate|date("d/m", "Europe/Paris") }} au {{ session.endDate|date("d/m/Y", "Europe/Paris") }} à {{ session.place }}
+                {% endif %}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% for s in event.sessions %}
+                    <a class="dropdown-item" href="{{ path('signature_tool_show_session_qrcode', {'event': event.id, 'tool': tool.id, 'session': s.id}) }}">Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }} à {{ s.place }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="pt-3 pb-2 mb-3">
+        <p>
+            <strong>Nombre de qrcodes totaux pour cette session :</strong> {{ qrcodes|length }}
+        </p>
+        {{ form(form) }}
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th>Identifiant</th>
+                <th>Utilisateur lié</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for qrcode in qrcodes %}
+                <tr>
+                    <td class="qrcode__parent">
+                        {{ qrcode.displayedName }}
+                        <div id="qrcode__{{ qrcode.id }}" class="qrcode__container"
+                             data-session="{{ qrcode.session.id }}"
+                             data-id="{{ qrcode.id }}"
+                             data-token="{{ qrcode.token }}"
+                             data-displayed-name="{{ qrcode.displayedName }}"
+                        >
+                            <img id="img__{{ qrcode.id }}" alt="qrcode" />
+                        </div>
+                    </td>
+                    <td>
+                        {% if qrcode.user %}
+                            {{ qrcode.user }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <a class="generateOnePDF" href="#">
+                            <span class="oi oi-camera-slr" title="icon camera-slr" aria-hidden="true"></span>
+                        </a>
+                        <a class="downloadOnePDF" href="#">
+                            <span class="oi oi-cloud-download" title="icon cloud-download" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+      var prefix = window.location.protocol + '//' + window.location.hostname;
+      $('.generate--pdf').click(function () {
+
+        $('.qrcode__container').each(function() {
+
+          var url = prefix + "/authce/" + $(this).data('session') + "/" + $(this).data('token');
+          url = encodeURI(url);
+
+          $(this).qrcode({
+            width: 100,
+            height: 100,
+            text: url
+          });
+
+          $(this).find('canvas').attr('id', 'canvas__' + $(this).data('id'));
+        });
+
+        $('.download--pdf').show();
+        $('.generate--pdf').hide();
+      });
+
+      $('.download--pdf').click(function () {
+        var docp = new jsPDF();
+        docp.setFontSize(30);
+
+        $('.qrcode__container').each(function() {
+
+          var canvas = document.getElementById("canvas__" + $(this).data('id'));
+          docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
+
+          docp.text($(this).data('displayed-name'), docp.internal.pageSize.width/2, 230, null, null, 'center')
+          docp.addPage();
+        });
+
+        docp.save('participants.pdf');
+
+      });
+
+      $('.generateOnePDF').click(function (e) {
+        e.preventDefault();
+
+        var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
+
+        var url = prefix + "/authce/" + qrcodeContainer.data('session') + "/" + qrcodeContainer.data('token');
+        url = encodeURI(url);
+
+        qrcodeContainer.qrcode({
+          width: 100,
+          height: 100,
+          text: url
+        });
+
+        qrcodeContainer.find('canvas').attr('id', 'canvas__' + qrcodeContainer.data('id'));
+
+        $(this).next().show();
+        $(this).hide();
+
+      });
+
+      $('.downloadOnePDF').click(function (e) {
+        e.preventDefault();
+
+        var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
+
+        var docp = new jsPDF();
+        docp.setFontSize(30);
+
+          var canvas = document.getElementById("canvas__" + qrcodeContainer.data('id'));
+          var pdffullname = qrcodeContainer.data('displayedName');
+          docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
+
+          docp.text(qrcodeContainer.data('displayed-name'), docp.internal.pageSize.width/2, 230, null, null, 'center')
+          docp.addPage();
+
+        docp.save(pdffullname + '.pdf');
+      });
+    </script>
+{% endblock %}

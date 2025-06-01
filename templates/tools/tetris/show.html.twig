@@ -1,0 +1,48 @@
+{% extends 'admin/admin_base.html.twig' %}
+
+{% block body %}
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Jeu</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownSession" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span data-feather="calendar"></span>
+                        Session du {{ session.startDate|date("d/m", "Europe/Paris") }} au {{ session.endDate|date("d/m/Y", "Europe/Paris") }}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownSession">
+                        {% for s in event.sessions %}
+                            <a class="dropdown-item" href="{{ path('tetris_tool_show_session', {'event': event.id, 'tool': tool.id, 'session': s.id}) }}">Session du {{ s.startDate|date("d/m", "Europe/Paris") }} au {{ s.endDate|date("d/m/Y", "Europe/Paris") }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownGroup" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span data-feather="calendar"></span>
+                        {{ group.name }}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownGroup">
+                        <a class="dropdown-item" href="#">
+                            {% for g in session.groupEvents %}
+                                <a class="dropdown-item" href="{{ path('tetris_tool_show_session_group', {'event': event.id, 'tool': tool.id, 'session': session.id, 'group': g.id}) }}">{{ g.name }}</a>
+                            {% endfor %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-3 pb-2 mb-3">
+            <div class="row">
+            {% for score in scores %}
+                <div class="col-4">'
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ score.userData.user.nom }}</h5>
+                            <span class="badge badge-pill badge-success">{{ score.score }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+{% endblock %}
