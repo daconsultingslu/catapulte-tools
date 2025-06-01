@@ -15,9 +15,9 @@ type: 'php:8.4'
 # application container. The 'source_path' specifies the subdirectory
 # from within the source that the mount should point at. 
 mounts:
-  'web/uploads':
-    source: local
-    source_path: uploads
+  'var/cache': { source: local }
+  'var/log': { source: local }
+  'public/uploads': { source: local }
 
 # The size of the persistent disk of the application (in MB).
 disk: 256
@@ -29,3 +29,28 @@ disk: 256
 # side is in the form '<service name>:<endpoint name>'.
 relationships:
     mariadb: 'mariadb:mysql'
+
+hooks:
+  build: |
+    set -x -e
+
+    curl -s https://get.symfony.com/cloud/configurator | bash
+
+    symfony-build    
+
+  deploy: |
+    set -x -e
+
+    symfony-deploy
+
+web:
+  locations:
+    '/':
+      root: 'public'
+      passthru: '/index.php'
+      allow: true
+      scripts: true
+
+runtime:
+  extensions:
+    - pdo_mysql
