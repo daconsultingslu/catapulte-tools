@@ -34,10 +34,9 @@ class SignatureUserData {
 
     /**
      * @var string $ip
-     *
-     * @Gedmo\IpTraceable(on="create")
      */
     #[ORM\Column(type: 'string', length: 45, nullable: true)]
+    #[Gedmo\IpTraceable(on: 'create')]
     private $ip;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
@@ -48,10 +47,9 @@ class SignatureUserData {
 
     /**
      * @var \DateTime $created
-     *
-     * @Gedmo\Timestampable(on="create")
      */
     #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'create')]
     private $created;
 
     #[ORM\JoinColumn(nullable: false)]

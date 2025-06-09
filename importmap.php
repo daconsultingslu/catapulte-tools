@@ -17,13 +17,46 @@ return [
         'entrypoint' => true,
     ],
     'bootstrap' => [
-        'version' => '5.3.5',
+        'version' => '4.6.2',
     ],
-    '@popperjs/core' => [
-        'version' => '2.11.8',
+    'jquery' => [
+        'version' => '3.2.1',
+    ],
+    'popper.js' => [
+        'version' => '1.16.1',
     ],
     'bootstrap/dist/css/bootstrap.min.css' => [
-        'version' => '5.3.5',
+        'version' => '4.6.2',
         'type' => 'css',
+    ],
+    'signature_pad' => [
+        'version' => '5.0.9',
+    ],
+    'jqcloud2' => [
+        'version' => '2.0.3',
+    ],
+    'jquery.qrcode' => [
+        'version' => '1.0.3',
+    ],
+    'jspdf' => [
+        'version' => '3.0.1',
+    ],
+    'chart.js' => [
+        'version' => '4.4.9',
+    ],
+    '@babel/runtime/helpers/typeof' => [
+        'version' => '7.26.10',
+    ],
+    'fflate' => [
+        'version' => '0.8.2',
+    ],
+    '@kurkle/color' => [
+        'version' => '0.3.4',
+    ],
+    'qrcode' => [
+        'version' => '1.5.4',
+    ],
+    'dijkstrajs' => [
+        'version' => '1.0.3',
     ],
 ];

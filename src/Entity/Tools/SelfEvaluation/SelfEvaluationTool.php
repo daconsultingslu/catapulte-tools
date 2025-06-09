@@ -36,15 +36,26 @@ class SelfEvaluationTool extends Tool {
     /**
      * @param SelfEvaluationCriteria $selfEvaluationCriteria
      */
-    public function addSelfEvaluationCriteria($selfEvaluationCriteria): void {
-        $this->selfEvaluationCriterias->add($selfEvaluationCriteria);
+    public function addSelfEvaluationCriteria($selfEvaluationCriteria): self {
+        if (!$this->selfEvaluationCriterias->contains($selfEvaluationCriteria)) {
+            $this->selfEvaluationCriterias[] = $selfEvaluationCriteria;
+            $selfEvaluationCriteria->setSelfEvaluationTool($this);
+        }
+
+        return $this;
     }
 
     /**
      * @param SelfEvaluationCriteria $selfEvaluationCriterias
      */
-    public function removeSelfEvaluationCriteria($selfEvaluationCriteria): void {
-        $this->selfEvaluationCriterias->removeElement($selfEvaluationCriteria);
-    }
+    public function removeSelfEvaluationCriteria($selfEvaluationCriteria): self {
+        if ($this->selfEvaluationCriterias->removeElement($selfEvaluationCriteria)) {
+            // set the owning side to null (unless already changed)
+            if ($selfEvaluationCriteria->sgtSelfEvaluationTool() === $this) {
+                $selfEvaluationCriteria->setSelfEvaluationTool(null);
+            }
+        }
 
+        return $this;
+    }
 }

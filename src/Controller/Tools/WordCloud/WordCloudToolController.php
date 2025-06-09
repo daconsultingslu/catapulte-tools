@@ -20,6 +20,13 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/evenement/{event}/nuage-de-mots', name: 'word_cloud_tool_')]
 class WordCloudToolController extends AbstractController
 {
+    public function __construct(
+        private readonly GroupEventRepository $groupEvents,
+        private readonly WordCloudUserDataRepository $wordCloudToolUserDataRepo,
+        private readonly UserRepository $userRepo,
+        private readonly EntityManagerInterface $entityManager
+    ){}
+
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/{tool}', name: 'show')]
     #[Route('/{tool}/groupe/{group}', name: 'show_group')]
@@ -27,14 +34,12 @@ class WordCloudToolController extends AbstractController
         Event $event,
         WordCloudTool $tool,
         ?GroupEvent $group,
-        GroupEventRepository $groupEvents,
-        WordCloudUserDataRepository $wordCloudToolUserDataRepo
     ): Response {
-        $groupsByEvent = $groupEvents->findAllByEvent($event);
+        $groupsByEvent = $this->groupEvents->findAllByEvent($event);
         if (!$group) {
             $group = $groupsByEvent[0];
         }
-        $words = $wordCloudToolUserDataRepo->findAllByGroup($group);
+        $words = $this->wordCloudToolUserDataRepo->findAllByGroup($group);
 
         return $this->render('tools/word_cloud/show.html.twig', [
             'tool' => $tool,
@@ -47,14 +52,12 @@ class WordCloudToolController extends AbstractController
 
     #[Route('/{tool}/ajouter-un-mot', name: 'add')]
     public function add(
+        Request $request,
         Event $event,
         WordCloudTool $tool,
-        Request $request,
-        UserRepository $userRepo,
-        EntityManagerInterface $entityManager
     ): Response {
         $user = $this->getUser();
-        $u = $userRepo->find($user->getId());
+        $u = $this->userRepo->find($user->getId());
 
         $wordCloudToolUserData = new WordCloudUserData($tool, $u->getUserData());
         $form = $this->createForm(WordCloudType::class, $wordCloudToolUserData);
@@ -62,8 +65,8 @@ class WordCloudToolController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($wordCloudToolUserData);
-            $entityManager->flush();
+            $this->entityManager->persist($wordCloudToolUserData);
+            $this->entityManager->flush();
 
             return $this->redirectToRoute('word_cloud_tool_add', [
                 'event' => $event->getId(),

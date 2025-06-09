@@ -62,7 +62,7 @@ class QCMUserDataRepository extends ServiceEntityRepository
     /**
      * @return QCMUserData[] Returns an array of QCMUserData objects
      */
-    public function getAverageTrueAnswerByQuestionBySession(Session $session = null, QCMTool $tool = null, User $user = null)
+    public function getAverageTrueAnswerByQuestionBySession(?Session $session = null, ?QCMTool $tool = null, ?User $user = null)
     {
         $entityManager = $this->getEntityManager();
 

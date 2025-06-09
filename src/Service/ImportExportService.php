@@ -147,11 +147,7 @@ class ImportExportService {
     }
 
     public function importUsers() {
-        $userTemps = $this->userRepository->findBy(
-            ['isActive' => false],
-            null,
-            10
-        );
+        $userTemps = $this->userRepository->findUsersInactive();
 
         if(!$userTemps) {
             return false;

@@ -27,42 +27,49 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        function importUsers() {
-            $.ajax({
-                url:'{{ (path('import_users')) }}',
-                type: "POST",
-                dataType: "json",
-                async: true,
-                success: function (data)
-                {
-                    console.log(data);
-                    if(data == 0){
-                        $('.js-import-messages').removeClass('js-import-messages').append('<div class="alert alert-success">Import terminé !</div>');
+        document.addEventListener('DOMContentLoaded', function() {
+            function importUsers() {
+                $.ajax({
+                    url: Routing.generate('import_users'),
+                    type: "POST",
+                    dataType: "json",
+                    async: true,
+                    success: function (data)
+                    {
+                        console.log(data);
+                        if(data == 0){
+                            $('.js-import-messages').removeClass('js-import-messages').append('<div class="alert alert-success">Import terminé !</div>');
 
-                        $('.js-import-users').remove();
+                            $('.js-import-users').remove();
+                            $('.loader').addClass('d-none');
+
+                            return true;
+                        }
+                        else {
+                            $('.js-import-messages').append('<div class="alert alert-success alert-import">10 utilisateurs importés</div>');
+                            setTimeout(function(){
+                                $('.alert-import').fadeOut('fast', function(){
+                                    $(this).remove();
+                                });
+                            }, 3000);
+
+                            return importUsers();
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) { // Ajout d'une gestion d'erreurs
+                        console.error("AJAX Error:", textStatus, errorThrown, jqXHR.responseText);
+                        $('.js-import-messages').append('<div class="alert alert-danger">Erreur lors de l\'importation.</div>');
                         $('.loader').addClass('d-none');
-
-                        return true;
                     }
-                    else {
-                        $('.js-import-messages').append('<div class="alert alert-success alert-import">10 utilisateurs importés</div>');
-                        setTimeout(function(){
-                            $('.alert-import').fadeOut('fast', function(){
-                                $(this).remove();
-                            });
-                        }, 3000);
+                });
+            }
 
-                        return importUsers();
-                    }
-                }
+            $('.js-import-users').on('click', function(){
+                $(this).prop('disabled', true);
+                $('.loader').removeClass('d-none');
+
+                importUsers();
             });
-        }
-
-        $('.js-import-users').on('click', function(){
-            $(this).prop('disabled', true);
-            $('.loader').removeClass('d-none');
-
-            importUsers();
         });
     </script>
 {% endblock %}

@@ -11,6 +11,6 @@ class DefaultController extends AbstractController
     #[Route('/', name: 'home')]
     public function home(): RedirectResponse
     {
-        return $this->redirectToRoute('login'); // Use the correct route name for your login page
+        return $this->redirectToRoute('app_login'); // Use the correct route name for your login page
     }
 }

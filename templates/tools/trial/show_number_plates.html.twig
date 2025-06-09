@@ -47,22 +47,23 @@
                     <td class="qrcode__parent">
                         {{ n.brand }}
                         <div id="qrcode__{{ n.id }}" class="qrcode__container"
-                             data-marque="{{ n.brand }}"
-                             data-modele="{{ n.model }}"
-                             data-immatriculation="{{ n.numberPlate }}"
-                             data-id="{{ n.id }}"
+                            data-marque="{{ n.brand }}"
+                            data-modele="{{ n.model }}"
+                            data-immatriculation="{{ n.numberPlate }}"
+                            data-id="{{ n.id }}"
                         >
                             <img id="img__{{ n.id }}" alt="qrcode" />
+                            <canvas id="canvas__{{ n.id }}"></canvas>
                         </div>
                     </td>
                     <td>{{ n.model }}</td>
                     <td>{{ n.numberPlate }}</td>
                     <td>
                         <a class="generateOnePDF" href="#">
-                            <span class="oi oi-camera-slr" title="icon camera-slr" aria-hidden="true"></span>
+                            <i class="fa fa-solid fa-camera" title="icon camera-slr" aria-hidden="true"></i>
                         </a>
                         <a class="downloadOnePDF" href="#">
-                            <span class="oi oi-cloud-download" title="icon cloud-download" aria-hidden="true"></span>
+                            <i class="fa fa-solid fa-cloud" title="icon cloud-download" aria-hidden="true"></i>
                         </a>
                     </td>
                 </tr>
@@ -75,81 +76,87 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-      $('.generate--pdf').click(function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.generate--pdf').click(function () {
 
-        $('.qrcode__container').each(function() {
-          var obj = { "id": $(this).data('id'), "immatriculation": $(this).data('immatriculation'), "modele": $(this).data('modele'), "brand": $(this).data('brand')};
-          var str = JSON.stringify(obj);
-          $(this).qrcode({
-            width: 100,
-            height: 100,
-            text: str
-          });
+                $('.qrcode__container').each(function() {
+                    var obj = { "id": $(this).data('id'), "immatriculation": $(this).data('immatriculation'), "modele": $(this).data('modele'), "brand": $(this).data('brand')};
+                    var str = JSON.stringify(obj);
+                    
+                    var dataId = $(this).data('id');
 
-          $(this).find('canvas').attr('id', 'canvas__' + $(this).data('id'));
+                    var canvas = document.getElementById('canvas__' + dataId)
+
+                    QRCode.toCanvas(canvas, str, function (error) {
+                        if (error) console.error(error)
+                        console.log('success!');
+                    })
+                });
+
+                $('.download--pdf').show();
+                $('.generate--pdf').hide();
+            });
+
+            $('.download--pdf').click(function () {
+                var docp = new jsPDF();
+                docp.setFontSize(30);
+
+                $('.qrcode__container').each(function() {
+
+                    var canvas = document.getElementById("canvas__" + $(this).data('id'));
+                    var pdffullname = $(this).data('immatriculation');
+                    docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
+
+                    docp.text(pdffullname, docp.internal.pageSize.width/2, 230, null, null, 'center')
+                    docp.addPage();
+                });
+
+                docp.save('voitures.pdf');
+
+            });
+
+            $('.generateOnePDF').click(function (e) {
+
+                e.preventDefault();
+
+                var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
+
+                var obj = { "id": qrcodeContainer.data('id'), "immatriculation": qrcodeContainer.data('immatriculation'), "modele": qrcodeContainer.data('modele'), "brand": qrcodeContainer.data('brand')};
+                var str = JSON.stringify(obj);
+
+                var dataId = qrcodeContainer.data('id');
+
+                var canvas = document.getElementById('canvas__' + dataId)
+
+                QRCode.toCanvas(canvas, str, function (error) {
+                    if (error) console.error(error)
+                    console.log('success!');
+                })
+
+                $(this).next().show();
+                $(this).hide();
+
+            });
+
+            $('.downloadOnePDF').click(function (e) {
+
+                e.preventDefault();
+
+                var qrcodeContainner = $(this).parents('tr').find('.qrcode__container');
+
+                var docp = new jsPDF();
+                docp.setFontSize(30);
+
+                var canvas = document.getElementById("canvas__" + qrcodeContainner.data('id'));
+                var pdffullname = qrcodeContainner.data('immatriculation');
+                docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
+
+                docp.text(pdffullname, docp.internal.pageSize.width/2, 230, null, null, 'center')
+                docp.addPage();
+
+                docp.save(pdffullname + '.pdf');
+            });
         });
-
-        $('.download--pdf').show();
-        $('.generate--pdf').hide();
-      });
-
-      $('.download--pdf').click(function () {
-        var docp = new jsPDF();
-        docp.setFontSize(30);
-
-        $('.qrcode__container').each(function() {
-
-          var canvas = document.getElementById("canvas__" + $(this).data('id'));
-          var pdffullname = $(this).data('immatriculation');
-          docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
-
-          docp.text(pdffullname, docp.internal.pageSize.width/2, 230, null, null, 'center')
-          docp.addPage();
-        });
-
-        docp.save('voitures.pdf');
-
-      });
-
-      $('.generateOnePDF').click(function (e) {
-
-        e.preventDefault();
-
-        var qrcodeContainner = $(this).parents('tr').find('.qrcode__container');
-
-        var obj = { "id": qrcodeContainner.data('id'), "immatriculation": qrcodeContainner.data('immatriculation'), "modele": qrcodeContainner.data('modele'), "brand": qrcodeContainner.data('brand')};
-        var str = JSON.stringify(obj);
-        qrcodeContainner.qrcode({
-          width: 100,
-          height: 100,
-          text: str
-        });
-
-        qrcodeContainner.find('canvas').attr('id', 'canvas__' + qrcodeContainner.data('id'));
-
-        $(this).next().show();
-        $(this).hide();
-
-      });
-
-      $('.downloadOnePDF').click(function (e) {
-
-        e.preventDefault();
-
-        var qrcodeContainner = $(this).parents('tr').find('.qrcode__container');
-
-        var docp = new jsPDF();
-        docp.setFontSize(30);
-
-        var canvas = document.getElementById("canvas__" + qrcodeContainner.data('id'));
-        var pdffullname = qrcodeContainner.data('immatriculation');
-        docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
-
-        docp.text(pdffullname, docp.internal.pageSize.width/2, 230, null, null, 'center')
-        docp.addPage();
-
-        docp.save(pdffullname + '.pdf');
-      });
     </script>
 {% endblock %}
 

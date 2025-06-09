@@ -2,7 +2,6 @@
 
 namespace App\Controller\Tools\QCM;
 
-use App\Controller\Admin\QCMToolCrudController;
 use App\Entity\Event;
 use App\Entity\Session;
 use App\Entity\Tools\QCM\QCMQuestion;
@@ -15,7 +14,6 @@ use App\Repository\Tools\QCM\QCMQuestionRepository;
 use App\Repository\Tools\QCM\QCMUserDataRepository;
 use App\Repository\User\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +27,10 @@ class QCMToolController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly QCMUserDataRepository $qcmUserDataRepository,
+        private readonly UserRepository $userRepo,
+        private readonly QCMQuestionRepository $qcmQuestionRepository,
+        private readonly QCMAnswerRepository $qcmAnswerRepository,
     )
     {
     }
@@ -38,15 +40,14 @@ class QCMToolController extends AbstractController
     #[Route('/{tool}/session/{session}', name: 'show_session')]
     public function show(
         Event $event,
-        ?Session $session,
         QCMTool $tool,
-        QCMUserDataRepository $qcmUserDataRepository
+        ?Session $session,
     ): Response {
         if (!$session) {
             $session = $event->getSessions()->first();
         }
 
-        $data = $qcmUserDataRepository->getScoreByUserBySession($session, $tool);
+        $data = $this->qcmUserDataRepository->getScoreByUserBySession($session, $tool);
 
         return $this->render('tools/qcm/show.html.twig', [
             'tool' => $tool,
@@ -59,27 +60,23 @@ class QCMToolController extends AbstractController
     #[Route('/{tool}/question', name: 'show_form')]
     #[Route('/{tool}/question/{qcmQuestion}', name: 'show_form_question')]
     public function showForm(
+        Request $request,
         Event $event,
         QCMTool $tool,
         ?QCMQuestion $qcmQuestion,
-        Request $request,
-        UserRepository $userRepo,
-        QCMQuestionRepository $qcmQuestionRepository,
-        QCMUserDataRepository $qcmUserDataRepository,
-        QCMAnswerRepository $qcmAnswerRepository,
     ): Response {
         $user = $this->getUser();
-        $u = $userRepo->find($user->getId());
+        $u = $this->userRepo->find($user->getId());
 
         if (!$qcmQuestion) {
             $qcmQuestion = $tool->getQCMQuestions()->first();
         }
 
-        $qcmUserDataCheck = $qcmUserDataRepository->findByQCMQuestionByUser($qcmQuestion, $user);
+        $qcmUserDataCheck = $this->qcmUserDataRepository->findByQCMQuestionByUser($qcmQuestion, $user);
         if ($qcmUserDataCheck) {
-            $nextQcmQuestion = $this->findNextQcmQuestion($tool, $u, $qcmQuestionRepository, $qcmUserDataRepository);
+            $nextQcmQuestion = $this->findNextQcmQuestion($tool, $u);
             if (!$nextQcmQuestion) {
-                $scores = $qcmUserDataRepository->getAverageTrueAnswerByQuestionBySession(null, $tool, $u);
+                $scores = $this->qcmUserDataRepository->getAverageTrueAnswerByQuestionBySession(null, $tool, $u);
                 $finalScore = round(count($scores['true']) / count($scores['all']) * 100);
 
                 $this->addFlash('info', 'Le QCM est terminé, merci d\'y avoir répondu ! Votre score final est de ' . $finalScore . '%');
@@ -95,15 +92,15 @@ class QCMToolController extends AbstractController
         }
 
         $qcmUserData = new QCMUserData($qcmQuestion, $u->getUserData());
+
         $form = $this->createForm(QCMType::class, $qcmUserData, [
-            'entity_manager' => $this->entityManager,
             'qcmQuestion' => $qcmQuestion,
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $answers = $request->request->get('qcm')['qcmAnswers'] ?? [];
+            $answers = $form->getData()->getQCMAnswers()->toArray() ?? [];
             if (!is_array($answers)) {
                 $answers = [$answers];
             }
@@ -121,17 +118,17 @@ class QCMToolController extends AbstractController
             $qcmUserData->setIsRightAnswered($this->checkIfRightAnswered($qcmQuestion, $answers));
             $qcmUserData->setCountAnswers(count($answers));
 
-            foreach ($answers as $answerId) {
-                $qcmAnswer = $qcmAnswerRepository->find($answerId);
+            foreach ($answers as $answer) {
+                $qcmAnswer = $this->qcmAnswerRepository->find($answer->getId());
                 $qcmUserData->addQCMAnswer($qcmAnswer);
             }
 
             $this->entityManager->persist($qcmUserData);
             $this->entityManager->flush();
 
-            $nextQcmQuestion = $this->findNextQcmQuestion($tool, $u, $qcmQuestionRepository, $qcmUserDataRepository);
+            $nextQcmQuestion = $this->findNextQcmQuestion($tool, $u);
             if (!$nextQcmQuestion) {
-                $scores = $qcmUserDataRepository->getAverageTrueAnswerByQuestionBySession(null, $tool, $u);
+                $scores = $this->qcmUserDataRepository->getAverageTrueAnswerByQuestionBySession(null, $tool, $u);
                 $finalScore = round(count($scores['true']) / count($scores['all']) * 100);
 
                 $this->addFlash('info', 'Le QCM est terminé, merci d\'y avoir répondu ! Votre score final est de ' . $finalScore . '%');
@@ -159,10 +156,9 @@ class QCMToolController extends AbstractController
         Event $event,
         QCMTool $tool,
         QCMQuestion $qcmQuestion,
-        UserRepository $userRepo,
     ): Response {
         $user = $this->getUser();
-        $u = $userRepo->find($user->getId());
+        $u = $this->userRepo->find($user->getId());
 
         $userQcmAnswer = new QCMUserData($qcmQuestion, $u->getUserData());
 
@@ -175,11 +171,11 @@ class QCMToolController extends AbstractController
         ]);
     }
 
-    private function findNextQcmQuestion(QCMTool $tool, User $u, QCMQuestionRepository $qcmQuestionRepository, QCMUserDataRepository $qcmUserDataRepository): ?QCMQuestion
+    private function findNextQcmQuestion(QCMTool $tool, User $u): ?QCMQuestion
     {
-        $qcmQuestions = $qcmQuestionRepository->findByQcmTool($tool);
+        $qcmQuestions = $this->qcmQuestionRepository->findByQcmTool($tool);
         foreach ($qcmQuestions as $q) {
-            if (!$qcmUserDataRepository->findByQcmQuestionByUser($q, $u)) {
+            if (!$this->qcmUserDataRepository->findByQcmQuestionByUser($q, $u)) {
                 return $q;
             }
         }
@@ -188,16 +184,15 @@ class QCMToolController extends AbstractController
 
     private function checkIfRightAnswered(QCMQuestion $question, array $answers): bool
     {
-        $trueAnswers = $question->getTrueQCMAnswers()->toArray();
-        $trueAnswersIds = array_map(fn($answer) => $answer->getId(), $trueAnswers);
+        $trueAnswers = $question->getTrueQCMAnswers();
 
-        if (count($trueAnswersIds) !== count($answers)) {
+        if (count($trueAnswers) !== count($answers)) {
             return false;
         }
 
-        sort($trueAnswersIds);
+        sort($trueAnswers);
         sort($answers);
 
-        return $trueAnswersIds === $answers;
+        return $trueAnswers === $answers;
     }
 }

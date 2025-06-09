@@ -4,7 +4,7 @@ namespace App\Entity\Tools\WordCloud;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Model\Tool;
-use App\Entity\User\User as User;
+use App\Entity\User\UserData;
 
 #[ORM\Entity(repositoryClass: \App\Repository\Tools\WordCloud\WordCloudUserDataRepository::class)]
 class WordCloudUserData {
@@ -26,9 +26,9 @@ class WordCloudUserData {
     private $word;
 
 
-    public function __construct(Tool $tool, User $user) {
+    public function __construct(Tool $tool, UserData $userData) {
         $this->wordCloudTool = $tool;
-        $this->userData = $user->getUserData();
+        $this->userData = $userData;
     }
 
     /**

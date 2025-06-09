@@ -20,8 +20,10 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        $('input[type="range"]').on('change', function(){
-          $('.range-value span').html($(this).val());
+        document.addEventListener('DOMContentLoaded', function() {
+            $('input[type="range"]').on('change', function(){
+                $('.range-value span').html($(this).val());
+            });
         });
     </script>
 {% endblock %}

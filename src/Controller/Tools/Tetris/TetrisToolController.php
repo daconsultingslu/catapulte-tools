@@ -21,6 +21,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/evenement/{event}/tetris', name: 'tetris_tool_')]
 class TetrisToolController extends AbstractController
 {
+    public function __construct(
+        private readonly TetrisUserDataRepository $tetrisUserDataRepository,
+        private readonly UserRepository $userRepo,
+        private readonly EntityManagerInterface $entityManager,
+    ){}
+
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/{tool}', name: 'show')]
     #[Route('/{tool}/session/{session}', name: 'show_session')]
@@ -30,7 +36,6 @@ class TetrisToolController extends AbstractController
         TetrisTool $tool,
         ?Session $session,
         ?GroupEvent $group,
-        TetrisUserDataRepository $tetrisUserDataRepository
     ): Response {
         if (!$session) {
             $session = $event->getSessions()->first();
@@ -40,7 +45,7 @@ class TetrisToolController extends AbstractController
             $group = $session->getGroupEvents()->first();
         }
 
-        $tetrisUserDatas = $tetrisUserDataRepository->findAllByGroup($group);
+        $tetrisUserDatas = $this->tetrisUserDataRepository->findAllByGroup($group);
 
         return $this->render('tools/tetris/show.html.twig', [
             'tool' => $tool,
@@ -52,7 +57,7 @@ class TetrisToolController extends AbstractController
     }
 
     #[Route('/{tool}/play', name: 'play')]
-    public function play(Event $event, TetrisTool $tool, UserRepository $userRepo): Response
+    public function play(Event $event, TetrisTool $tool): Response
     {
         $formattedData = [];
 
@@ -75,7 +80,7 @@ class TetrisToolController extends AbstractController
         }
 
         $user = $this->getUser();
-        $u = $userRepo->find($user->getUsername());
+        $u = $this->userRepo->find($user->getId());
 
         return $this->render('tools/tetris/play.html.twig', [
             'tool' => $tool,
@@ -87,16 +92,14 @@ class TetrisToolController extends AbstractController
 
     #[Route('/{tool}/save-score/{user}/{score}', name: 'save_score', options: ['expose' => true])]
     public function saveScore(
+        Request $request,
         Event $event,
         TetrisTool $tool,
         User $user,
         int $score,
-        Request $request,
-        TetrisUserDataRepository $tetrisUserDataRepository,
-        EntityManagerInterface $entityManager
     ): JsonResponse {
         if ($request->isXmlHttpRequest()) {
-            $tetrisUserData = $tetrisUserDataRepository->findOneBy([
+            $tetrisUserData = $this->tetrisUserDataRepository->findOneBy([
                 'user' => $user,
                 'tetrisTool' => $tool,
             ]);
@@ -106,12 +109,12 @@ class TetrisToolController extends AbstractController
                 $tetrisUserData->setUserData($user->getUserData());
                 $tetrisUserData->setTetrisTool($tool);
                 $tetrisUserData->setScore(0);
-                $entityManager->persist($tetrisUserData);
+                $this->entityManager->persist($tetrisUserData);
             } else {
                 $tetrisUserData->setScore(0);
             }
 
-            $entityManager->flush();
+            $this->entityManager->flush();
 
             return new JsonResponse(['data' => 'Score updated']);
         }

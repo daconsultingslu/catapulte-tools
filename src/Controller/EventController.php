@@ -13,6 +13,7 @@ class EventController extends AbstractController
     #[Route('/{event}', name: 'show')]
     public function show(Event $event): Response
     {
+        //dd(count($event->getTools()));
         return $this->render('event/show.html.twig', [
             'controller_name' => 'EventController',
             'event' => $event,

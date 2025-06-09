@@ -58,13 +58,16 @@
                 <tr>
                     <td class="qrcode__parent">
                         {{ qrcode.displayedName }}
-                        <div id="qrcode__{{ qrcode.id }}" class="qrcode__container"
-                             data-session="{{ qrcode.session.id }}"
-                             data-id="{{ qrcode.id }}"
-                             data-token="{{ qrcode.token }}"
-                             data-displayed-name="{{ qrcode.displayedName }}"
+                        <div
+                            id="qrcode__{{ qrcode.id }}"
+                            class="qrcode__container"
+                            data-session="{{ qrcode.session.id }}"
+                            data-id="{{ qrcode.id }}"
+                            data-token="{{ qrcode.token }}"
+                            data-displayed-name="{{ qrcode.displayedName }}"
                         >
                             <img id="img__{{ qrcode.id }}" alt="qrcode" />
+                            <canvas id="canvas__{{ qrcode.id }}"></canvas>
                         </div>
                     </td>
                     <td>
@@ -76,10 +79,10 @@
                     </td>
                     <td class="text-right">
                         <a class="generateOnePDF" href="#">
-                            <span class="oi oi-camera-slr" title="icon camera-slr" aria-hidden="true"></span>
+                            <i class="fa fa-solid fa-camera" title="icon camera-slr" aria-hidden="true"></i>
                         </a>
                         <a class="downloadOnePDF" href="#">
-                            <span class="oi oi-cloud-download" title="icon cloud-download" aria-hidden="true"></span>
+                            <i class="fa fa-solid fa-cloud" title="icon cloud-download" aria-hidden="true"></i>
                         </a>
                     </td>
                 </tr>
@@ -92,81 +95,82 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-      var prefix = window.location.protocol + '//' + window.location.hostname;
-      $('.generate--pdf').click(function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            var prefix = window.location.protocol + '//' + window.location.hostname;
+            $('.generate--pdf').click(function () {
 
-        $('.qrcode__container').each(function() {
+                $('.qrcode__container').each(function() {
+                    var dataId = $(this).data('id');
 
-          var url = prefix + "/authce/" + $(this).data('session') + "/" + $(this).data('token');
-          url = encodeURI(url);
+                    var url = prefix + "/authce/" + $(this).data('session') + "/" + $(this).data('token');
+                    url = encodeURI(url);
 
-          $(this).qrcode({
-            width: 100,
-            height: 100,
-            text: url
-          });
+                    var canvas = document.getElementById('canvas__' + dataId)
 
-          $(this).find('canvas').attr('id', 'canvas__' + $(this).data('id'));
+                    QRCode.toCanvas(canvas, url, function (error) {
+                        if (error) console.error(error)
+                        console.log('success!');
+                    })
+                });
+
+                $('.download--pdf').show();
+                $('.generate--pdf').hide();
+            });
+
+            $('.download--pdf').click(function () {
+                var docp = new jsPDF();
+                docp.setFontSize(30);
+
+                $('.qrcode__container').each(function() {
+                    var canvas = document.getElementById("canvas__" + $(this).data('id'));
+                    docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
+
+                    docp.text($(this).data('displayed-name'), docp.internal.pageSize.width/2, 230, null, null, 'center')
+                    docp.addPage();
+                });
+
+                docp.save('participants.pdf');
+
+            });
+
+            $('.generateOnePDF').click(function (e) {
+                e.preventDefault();
+
+                var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
+                var dataId = qrcodeContainer.data('id');
+
+                var url = prefix + "/authce/" + qrcodeContainer.data('session') + "/" + qrcodeContainer.data('token');
+                url = encodeURI(url);
+
+                var canvas = document.getElementById('canvas__' + dataId)
+
+                QRCode.toCanvas(canvas, url, function (error) {
+                    if (error) console.error(error)
+                    console.log('success!');
+                })
+
+                $(this).next().show();
+                $(this).hide();
+
+            });
+
+            $('.downloadOnePDF').click(function (e) {
+                e.preventDefault();
+
+                var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
+
+                var docp = new jsPDF();
+                docp.setFontSize(30);
+
+                var canvas = document.getElementById("canvas__" + qrcodeContainer.data('id'));
+                var pdffullname = qrcodeContainer.data('displayedName');
+                docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
+
+                docp.text(qrcodeContainer.data('displayed-name'), docp.internal.pageSize.width/2, 230, null, null, 'center')
+                docp.addPage();
+
+                docp.save(pdffullname + '.pdf');
+            });
         });
-
-        $('.download--pdf').show();
-        $('.generate--pdf').hide();
-      });
-
-      $('.download--pdf').click(function () {
-        var docp = new jsPDF();
-        docp.setFontSize(30);
-
-        $('.qrcode__container').each(function() {
-
-          var canvas = document.getElementById("canvas__" + $(this).data('id'));
-          docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
-
-          docp.text($(this).data('displayed-name'), docp.internal.pageSize.width/2, 230, null, null, 'center')
-          docp.addPage();
-        });
-
-        docp.save('participants.pdf');
-
-      });
-
-      $('.generateOnePDF').click(function (e) {
-        e.preventDefault();
-
-        var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
-
-        var url = prefix + "/authce/" + qrcodeContainer.data('session') + "/" + qrcodeContainer.data('token');
-        url = encodeURI(url);
-
-        qrcodeContainer.qrcode({
-          width: 100,
-          height: 100,
-          text: url
-        });
-
-        qrcodeContainer.find('canvas').attr('id', 'canvas__' + qrcodeContainer.data('id'));
-
-        $(this).next().show();
-        $(this).hide();
-
-      });
-
-      $('.downloadOnePDF').click(function (e) {
-        e.preventDefault();
-
-        var qrcodeContainer = $(this).parents('tr').find('.qrcode__container');
-
-        var docp = new jsPDF();
-        docp.setFontSize(30);
-
-          var canvas = document.getElementById("canvas__" + qrcodeContainer.data('id'));
-          var pdffullname = qrcodeContainer.data('displayedName');
-          docp.addImage(canvas.toDataURL(), 'JPEG', 55, 98, 100, 100,null,'FAST')
-
-          docp.text(qrcodeContainer.data('displayed-name'), docp.internal.pageSize.width/2, 230, null, null, 'center')
-          docp.addPage();
-
-        docp.save(pdffullname + '.pdf');
-      });
     </script>
 {% endblock %}

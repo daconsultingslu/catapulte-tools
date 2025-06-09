@@ -11,6 +11,13 @@
         <div class="question mb-4">
             <h3 class="mb-3">{{ qcmQuestion.name }}</h3>
             {{ form_start(form, {attr: {class: 'form--qcm-tool'}}) }}
+
+            {% if qcmQuestion.trueQCMAnswers|length != 1 %}
+                <div class="alert alert-info">Plusieurs réponses attendues</div>
+            {% else %}
+                <div class="alert alert-info">Une seule réponse attendue</div>
+            {% endif %}
+
             {{ form_widget(form) }}
             <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
 
@@ -25,23 +32,25 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        const timeInput = $('#qcm_time');
-        let seconds = 00; 
-        let millis = 00; 
-        const startTimer = () => {
-            millis++; 
-            
-            if (millis > 99) {
-                seconds++;
-                millis = 0;
+        document.addEventListener('DOMContentLoaded', function() {
+            const timeInput = $('#qcm_time');
+            let seconds = 00; 
+            let millis = 00; 
+            const startTimer = () => {
+                millis++; 
+                
+                if (millis > 99) {
+                    seconds++;
+                    millis = 0;
+                }
+                
+                timeInput.val(seconds * 100 + millis);
             }
-            
-            timeInput.val(seconds * 100 + millis);
-        }
 
-        let interval;
+            let interval;
 
-        clearInterval(interval);
-        interval = setInterval(startTimer, 10);
+            clearInterval(interval);
+            interval = setInterval(startTimer, 10);
+        });
     </script>
 {% endblock %}

@@ -45,49 +45,51 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-      var labels = new Array();
-      var averages = new Array();
+      document.addEventListener('DOMContentLoaded', function() {
+        var labels = new Array();
+        var averages = new Array();
 
-      $('.self-evaluation-averages-ready').each(function(){
-        labels.push($(this).data('criteria'));
-        averages.push($(this).data('avg'));
-      });
+        $('.self-evaluation-averages-ready').each(function(){
+          labels.push($(this).data('criteria'));
+          averages.push($(this).data('avg'));
+        });
 
-      var ctx = document.getElementById("myChart");
-      var myChart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-          labels: labels,
-          fontSize: 16,
-          datasets: [
-            {
-              label: "Moyennes",
-              fill: true,
-              backgroundColor: "rgba(179,181,198,0.2)",
-              borderColor: "rgba(179,181,198,1)",
-              pointBorderColor: "#fff",
-              pointBackgroundColor: "rgba(179,181,198,1)",
-              data: averages
-            }
-          ]
-        },
-        options: {
-          title: {
-            display: true,
-            text: 'Résultats',
-            fontSize: 16
+        var ctx = document.getElementById("myChart");
+        var myChart = new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: labels,
+            fontSize: 16,
+            datasets: [
+              {
+                label: "Moyennes",
+                fill: true,
+                backgroundColor: "rgba(179,181,198,0.2)",
+                borderColor: "rgba(179,181,198,1)",
+                pointBorderColor: "#fff",
+                pointBackgroundColor: "rgba(179,181,198,1)",
+                data: averages
+              }
+            ]
           },
-          scale: {
-            pointLabels: {
-              fontSize: 14
+          options: {
+            title: {
+              display: true,
+              text: 'Résultats',
+              fontSize: 16
             },
-            ticks: {
-              beginAtZero: true,
-              min: 0,
-              max: 10
+            scale: {
+              pointLabels: {
+                fontSize: 14
+              },
+              ticks: {
+                beginAtZero: true,
+                min: 0,
+                max: 10
+              }
             }
           }
-        }
+        });
       });
     </script>
 {% endblock %}

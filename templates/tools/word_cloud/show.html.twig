@@ -30,28 +30,29 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        var words = new Array();
-        $('.word-ready').each(function(){
-          words.push(
-              {
-                text: $(this).data('word'),
-                weight: $(this).data('number')
-              }
-          )
+      document.addEventListener('DOMContentLoaded', function() {
+          var words = new Array();
+          $('.word-ready').each(function(){
+            words.push(
+                {
+                  text: $(this).data('word'),
+                  weight: $(this).data('number')
+                }
+            )
+          });
+
+        $('.word-cloud').jQCloud(words, {
+          'removeOverflowing': false
         });
 
-      $('.word-cloud').jQCloud(words, {
-        'removeOverflowing': false
-      });
-
-      $(document).on('click', '.jqcloud-word', function(){
-        var fontSize = parseInt($(this).css('font-size'));
-        $(this).css({
-          'font-size': (fontSize + 5) + 'px',
-          'color': 'red'
+        $(document).on('click', '.jqcloud-word', function(){
+          var fontSize = parseInt($(this).css('font-size'));
+          $(this).css({
+            'font-size': (fontSize + 5) + 'px',
+            'color': 'red'
+          });
         });
       });
-
     </script>
 {% endblock %}
 

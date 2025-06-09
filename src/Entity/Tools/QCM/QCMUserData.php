@@ -106,22 +106,21 @@ class QCMUserData
         $this->countAnswers = $countAnswers;
     }
 
-
     public function addQCMAnswer(QCMAnswer $qcmAnswer)
     {
-      $this->qcmAnswers[] = $qcmAnswer;
+        $this->qcmAnswers[] = $qcmAnswer;
 
-      return $this;
+        return $this;
     }
 
     public function removeQCMAnswer(QCMAnswer $qcmAnswer)
     {
-      $this->qcmAnswers->removeElement($qcmAnswer);
+        $this->qcmAnswers->removeElement($qcmAnswer);
     }
 
     public function getQCMAnswers()
     {
-      return $this->qcmAnswers;
+        return $this->qcmAnswers;
     }
 
     /**

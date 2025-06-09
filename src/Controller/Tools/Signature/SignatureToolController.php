@@ -300,6 +300,7 @@ class SignatureToolController extends AbstractController
         $userTemps = $userTempRepository->findBy(['isActive' => false]);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->importExportService->setImportExport($importExport);
             $message = $this->importExportService->checkImportUsers($importExport);
             if ($message === true) {
                 $this->addFlash('info', 'Fichier valide, prêt pour importer !');

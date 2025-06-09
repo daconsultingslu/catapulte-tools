@@ -1,0 +1,61 @@
+.wrapper {
+  position: relative;
+  width: 400px;
+  height: 200px;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.signature-pad,
+.blank-pad {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width:400px;
+  height:200px;
+  background-color: white;
+}
+
+.blank-pad {
+  z-index: -9999;
+}
+
+.fa {
+  font-size: 1.2rem;
+  padding-right: 10px;
+}
+
+.fa-eye {
+  color: black;
+}
+
+.fa-circle-check {
+  color: green;
+}
+
+.fa-circle-x {
+  color: red;
+}
+
+.qrcode__container {
+  display: none;
+}
+
+.download--pdf,
+.downloadOnePDF {
+  display: none;
+}
+
+.login-nickname {
+    display: none;
+}
+
+.signature-pad {
+    border: 1px solid black;
+}
+
+.dropdown-menu.show {
+    z-index: 10000;
+}

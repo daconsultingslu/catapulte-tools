@@ -25,7 +25,7 @@ class ImportExportController extends AbstractController
         $this->importExportService = $importExportService;
     }
 
-    #[Route('/import/users', name: 'import_users')]
+    #[Route('/import/users', name: 'import_users', options: ['expose' => true])]
     public function importUsers(): JsonResponse
     {
         return $this->json($this->importExportService->importUsers());

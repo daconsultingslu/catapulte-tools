@@ -23,6 +23,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/evenement/{event}/auto-evaluation', name: 'self_evaluation_tool_')]
 class SelfEvaluationToolController extends AbstractController
 {
+    public function __construct(
+        private readonly SelfEvaluationUserDataRepository $selfEvaluationUserDataRepo,
+        private readonly GroupEventRepository $groupEvents,
+        private readonly UserRepository $userRepo,
+        private readonly SelfEvaluationCriteriaRepository $selfEvaluationCriteriaRepo,
+        private readonly EntityManagerInterface $entityManager
+    ) {}
+
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/{tool}', name: 'show')]
     #[Route('/{tool}/groupe/{group}', name: 'show_group')]
@@ -30,15 +38,13 @@ class SelfEvaluationToolController extends AbstractController
         Event $event,
         SelfEvaluationTool $tool,
         ?GroupEvent $group,
-        SelfEvaluationUserDataRepository $selfEvaluationUserDataRepo,
-        GroupEventRepository $groupEvents
     ): Response {
-        $groupsByEvent = $groupEvents->findAllByEvent($event);
+        $groupsByEvent = $this->groupEvents->findAllByEvent($event);
         if (!$group) {
             $group = $groupsByEvent[0];
         }
 
-        $criteriasAveragesByGroup = $selfEvaluationUserDataRepo->findAllByStepByGroupByTool('step1', $group, $tool);
+        $criteriasAveragesByGroup = $this->selfEvaluationUserDataRepo->findAllByStepByGroupByTool('step1', $group, $tool);
 
         return $this->render('tools/self_evaluation/show.html.twig', [
             'tool' => $tool,
@@ -52,26 +58,22 @@ class SelfEvaluationToolController extends AbstractController
     #[Route('/{tool}/etape/{step}', name: 'show_first_criteria')]
     #[Route('/{tool}/etape/{step}/critere/{criteria}', name: 'show_criteria')]
     public function showCriterias(
+        Request $request,
         Event $event,
         SelfEvaluationTool $tool,
         string $step,
-        ?SelfEvaluationCriteria $criteria,
-        Request $request,
-        UserRepository $userRepo,
-        SelfEvaluationCriteriaRepository $selfEvaluationCriteriaRepo,
-        SelfEvaluationUserDataRepository $selfEvaluationUserDataRepo,
-        EntityManagerInterface $entityManager
+        ?SelfEvaluationCriteria $criteria = null,
     ): Response {
         $user = $this->getUser();
-        $u = $userRepo->find($user->getId());
+        $u = $this->userRepo->find($user->getId());
 
         if (!$criteria) {
             $criteria = $tool->getSelfEvaluationCriterias()->first();
         }
 
-        $userCriteriasCheck = $selfEvaluationUserDataRepo->findByCriteriaByUser($criteria, $user, $step);
+        $userCriteriasCheck = $this->selfEvaluationUserDataRepo->findByCriteriaByUser($criteria, $user, $step);
         if ($userCriteriasCheck) {
-            $nextCriteria = $this->findNextCriteria($u, $tool, $step, $selfEvaluationCriteriaRepo, $selfEvaluationUserDataRepo);
+            $nextCriteria = $this->findNextCriteria($u, $tool, $step);
             if (!$nextCriteria) {
                 return $this->redirectToRoute('event_show', ['event' => $event->getId()]);
             }
@@ -90,10 +92,10 @@ class SelfEvaluationToolController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($selfEvaluationUserData);
-            $entityManager->flush();
+            $this->entityManager->persist($selfEvaluationUserData);
+            $this->entityManager->flush();
 
-            $nextCriteria = $this->findNextCriteria($u, $tool, $step, $selfEvaluationCriteriaRepo, $selfEvaluationUserDataRepo);
+            $nextCriteria = $this->findNextCriteria($u, $tool, $step);
 
             if (!$nextCriteria) {
                 $this->addFlash('info', 'L\'auto-évaluation est terminée, merci !');
@@ -120,12 +122,10 @@ class SelfEvaluationToolController extends AbstractController
         User $u,
         SelfEvaluationTool $tool,
         string $step,
-        SelfEvaluationCriteriaRepository $selfEvaluationCriteriaRepository,
-        SelfEvaluationUserDataRepository $selfEvaluationUserDataRepository
     ): ?SelfEvaluationCriteria {
-        $selfEvaluationCriterias = $selfEvaluationCriteriaRepository->findBySelfEvaluationTool($tool);
+        $selfEvaluationCriterias = $this->selfEvaluationCriteriaRepo->findBySelfEvaluationTool($tool);
         foreach ($selfEvaluationCriterias as $c) {
-            if (!$selfEvaluationUserDataRepository->findOneBy(['selfEvaluationCriteria' => $c, 'step' => $step, 'userData' => $u->getUserData()])) {
+            if (!$this->selfEvaluationUserDataRepo->findOneBy(['selfEvaluationCriteria' => $c, 'step' => $step, 'userData' => $u->getUserData()])) {
                 return $c;
             }
         }

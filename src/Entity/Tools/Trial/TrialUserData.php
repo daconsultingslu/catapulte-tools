@@ -27,10 +27,9 @@ class TrialUserData {
 
     /**
      * @var string $ip
-     *
-     * @Gedmo\IpTraceable(on="create")
      */
     #[ORM\Column(type: 'string', length: 45, nullable: true)]
+    #[Gedmo\IpTraceable(on: 'create')] 
     private $ip;
 
     /**

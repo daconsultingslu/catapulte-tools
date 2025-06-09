@@ -2,27 +2,36 @@
 
 {% block body %}
 
-    <form method="post" class="form-signin text-center">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
+    <div class="d-flex align-items-center justify-content-center mt-5">
+        <form method="post" class="form-signin text-center">
+            {% if error %}
+                <div class="alert alert-danger mb-3">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
 
-        {% if app.user %}
-            <div class="mb-3">
-                You are logged in as {{ app.user.username }}, <a href="{{ path('logout') }}">Logout</a>
+            {% if app.user %}
+                <div class="mb-3">
+                    You are logged in as {{ app.user.username }}, <a href="{{ path('app_logout') }}">Logout</a>
+                </div>
+            {% endif %}
+
+            <h1>Login</h1>
+
+            <div class="form-group">
+                <label for="inputUsername" class="sr-only">Username</label>
+                <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
             </div>
-        {% endif %}
-        <h1>Login</h1>
-        <label for="inputUsername" class="sr-only">Username</label>
-        <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
 
-        <input type="hidden" name="_csrf_token"
-            value="{{ csrf_token('authenticate') }}"
-        >
+            <div class="form-group">
+                <label for="inputPassword" class="sr-only">Password</label>
+                <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+            </div>
 
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Se connecter</button>
-    </form>
+            <input type="hidden" name="_csrf_token"
+                value="{{ csrf_token('authenticate') }}"
+            >
+
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Se connecter</button>
+        </form>
+    </div>
 
 {% endblock %}

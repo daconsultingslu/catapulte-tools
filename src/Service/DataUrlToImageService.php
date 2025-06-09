@@ -11,7 +11,7 @@ use App\Entity\User\User;
 class DataUrlToImageService {
     public function __construct(
         private readonly KernelInterface $kernel,
-        private readonly Filesystem $filesystem,
+        private readonly Filesystem $fileSystem,
     )
     {}
 
