@@ -15,9 +15,18 @@ type: 'php:8.4'
 # application container. The 'source_path' specifies the subdirectory
 # from within the source that the mount should point at. 
 mounts:
-  'var/cache': { source: local }
-  'var/log': { source: local }
-  'public/uploads': { source: local }
+  'var/cache':
+    source: local
+    source_path: cache_data
+  'var/log':
+    source: local
+    source_path: log_data
+  'public/uploads':
+    source: local
+    source_path: uploads_data
+  'public/uploads/theme':
+    source: local
+    source_path: uploads_theme_data
 
 # The size of the persistent disk of the application (in MB).
 disk: 256
@@ -36,7 +45,7 @@ hooks:
 
     curl -s https://get.symfony.com/cloud/configurator | bash
 
-    symfony-build    
+    symfony-build
 
   deploy: |
     set -x -e
