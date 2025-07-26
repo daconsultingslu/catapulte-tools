@@ -4,6 +4,7 @@ namespace App\Controller\Tools\QCM;
 
 use App\Entity\Event;
 use App\Entity\Session;
+use App\Entity\Tools\QCM\QCMAnswer;
 use App\Entity\Tools\QCM\QCMQuestion;
 use App\Entity\Tools\QCM\QCMTool;
 use App\Entity\Tools\QCM\QCMUserData;
@@ -185,14 +186,17 @@ class QCMToolController extends AbstractController
     private function checkIfRightAnswered(QCMQuestion $question, array $answers): bool
     {
         $trueAnswers = $question->getTrueQCMAnswers();
+        $answerIds = array_map(function(QCMAnswer $answer) {
+            return $answer->getId();
+        }, $answers);
 
-        if (count($trueAnswers) !== count($answers)) {
+        if (count($trueAnswers) !== count($answerIds)) {
             return false;
         }
 
         sort($trueAnswers);
-        sort($answers);
+        sort($answerIds);
 
-        return $trueAnswers === $answers;
+        return $trueAnswers === $answerIds;
     }
 }

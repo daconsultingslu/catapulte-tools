@@ -12,12 +12,6 @@
             <h3 class="mb-3">{{ qcmQuestion.name }}</h3>
             {{ form_start(form, {attr: {class: 'form--qcm-tool'}}) }}
 
-            {% if qcmQuestion.trueQCMAnswers|length != 1 %}
-                <div class="alert alert-info">Plusieurs réponses attendues</div>
-            {% else %}
-                <div class="alert alert-info">Une seule réponse attendue</div>
-            {% endif %}
-
             {{ form_widget(form) }}
             <button type="submit" class="btn btn-primary my-1 btn--submit">Valider</button>
 

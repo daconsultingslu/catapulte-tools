@@ -38,7 +38,7 @@ class QCMUserDataRepository extends ServiceEntityRepository
           ->setParameter('qcmQuestion', $qcmQuestion->getId())
           ->getQuery()
           ->getResult()
-          ;
+        ;
     }
 
     /**
@@ -47,16 +47,16 @@ class QCMUserDataRepository extends ServiceEntityRepository
     public function findByQCMQuestionByUserId(QCMQuestion $qcmQuestion, $user)
     {
         return $this->createQueryBuilder('qud')
-          ->join('qud.userData', 'ud')
-          ->join('ud.user', 'u')
-          ->join('qud.qcmQuestion', 'qq')
-          ->andWhere('u.id = :user')
-          ->andWhere('qq.id = :qcmQuestion')
-          ->setParameter('user', $user)
-          ->setParameter('qcmQuestion', $qcmQuestion->getId())
-          ->getQuery()
-          ->getResult()
-          ;
+            ->join('qud.userData', 'ud')
+            ->join('ud.user', 'u')
+            ->join('qud.qcmQuestion', 'qq')
+            ->andWhere('u.id = :user')
+            ->andWhere('qq.id = :qcmQuestion')
+            ->setParameter('user', $user)
+            ->setParameter('qcmQuestion', $qcmQuestion->getId())
+            ->getQuery()
+            ->getResult()
+        ;
     }
 
     /**
@@ -82,37 +82,37 @@ class QCMUserDataRepository extends ServiceEntityRepository
         }
 
         $query01 = $entityManager->createQuery(
-          'SELECT s.id as session, qq.id as question, count(qud.isRightAnswered) as nbAll
-        FROM App\Entity\Tools\QCM\QCMQuestion qq
-        LEFT JOIN qq.qcmUserDatas qud
-        LEFT JOIN qq.qcmTool qt
-        LEFT JOIN qud.userData ud
-        LEFT JOIN ud.user u
-        LEFT JOIN u.groupEvent ge
-        LEFT JOIN ge.sessions s
-        '.$where.'
-        GROUP BY qq.id, s.id
-        ORDER BY qq.id ASC'
+            'SELECT s.id as session, qq.id as question, count(qud.isRightAnswered) as nbAll
+            FROM App\Entity\Tools\QCM\QCMQuestion qq
+            LEFT JOIN qq.qcmUserDatas qud
+            LEFT JOIN qq.qcmTool qt
+            LEFT JOIN qud.userData ud
+            LEFT JOIN ud.user u
+            LEFT JOIN u.groupEvent ge
+            LEFT JOIN ge.sessions s
+            '.$where.'
+            GROUP BY qq.id, s.id
+            ORDER BY qq.id ASC'
         )->setParameters($parameters);
 
         $query02 = $entityManager->createQuery(
-          'SELECT s.id as session, qq.id as question, count(qud.isRightAnswered) as nbTrue
-        FROM App\Entity\Tools\QCM\QCMQuestion qq
-        LEFT JOIN qq.qcmUserDatas qud WITH qud.isRightAnswered = TRUE
-        LEFT JOIN qq.qcmTool qt
-        LEFT JOIN qud.userData ud
-        LEFT JOIN ud.user u
-        LEFT JOIN u.groupEvent ge
-        LEFT JOIN ge.sessions s
-        '.$where.'
-        GROUP BY qq.id, s.id
-        ORDER BY qq.id ASC'
+            'SELECT s.id as session, qq.id as question, count(qud.isRightAnswered) as nbTrue
+            FROM App\Entity\Tools\QCM\QCMQuestion qq
+            LEFT JOIN qq.qcmUserDatas qud WITH qud.isRightAnswered = TRUE
+            LEFT JOIN qq.qcmTool qt
+            LEFT JOIN qud.userData ud
+            LEFT JOIN ud.user u
+            LEFT JOIN u.groupEvent ge
+            LEFT JOIN ge.sessions s
+            '.$where.'
+            GROUP BY qq.id, s.id
+            ORDER BY qq.id ASC'
         )->setParameters($parameters);
 
         // returns an array of objects
         return [
-          'all' => $query01->execute(),
-          'true' => $query02->execute()
+            'all' => $query01->execute(),
+            'true' => $query02->execute()
         ];
     }
 
