@@ -40,10 +40,10 @@ class SignatureToolCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setLabel('Formateur'),
             BooleanField::new('isMultiSignatures')
-                ->setRequired(true)
+                ->setRequired(false)
                 ->setLabel('Double signature ?'),
             BooleanField::new('isWithDischarge')
-                ->setRequired(true)
+                ->setRequired(false)
                 ->setLabel('Avec décharge ?'),
             AssociationField::new('event')
                 ->setRequired(false)

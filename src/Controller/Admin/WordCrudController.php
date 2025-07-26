@@ -33,7 +33,7 @@ class WordCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setLabel('Nom'),
             BooleanField::new('rightAnswer')
-                ->setRequired(true)
+                ->setRequired(false)
                 ->setLabel('Bonne réponse ?'),
             AssociationField::new('level')
                 ->setRequired(true)

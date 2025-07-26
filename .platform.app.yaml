@@ -27,9 +27,12 @@ mounts:
   'public/uploads/theme':
     source: local
     source_path: uploads_theme_data
+  'public/assets':
+    source: local
+    source_path: assets_data
 
 # The size of the persistent disk of the application (in MB).
-disk: 256
+disk: 768
 
 # The relationships of the application with services or other applications.
 #
@@ -51,6 +54,8 @@ hooks:
     set -x -e
 
     symfony-deploy
+
+    php bin/console asset-map:compile --env=prod --no-debug
 
 web:
   locations:
