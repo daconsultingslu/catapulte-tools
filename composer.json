@@ -23,6 +23,7 @@
         "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "7.2.*",
+        "symfony/monolog-bundle": "^3.10",
         "symfony/runtime": "7.2.*",
         "symfony/security-bundle": "7.2.*",
         "symfony/security-csrf": "7.2.*",
