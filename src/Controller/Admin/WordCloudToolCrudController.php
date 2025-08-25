@@ -21,7 +21,8 @@ class WordCloudToolCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Nuages de mots')
-            ->setEntityLabelInSingular('Nuage de mots');
+            ->setEntityLabelInSingular('Nuage de mots')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

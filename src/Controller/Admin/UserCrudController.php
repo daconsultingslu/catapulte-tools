@@ -21,7 +21,8 @@ class UserCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Utilisateurs')
-            ->setEntityLabelInSingular('Utilisateur');
+            ->setEntityLabelInSingular('Utilisateur')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

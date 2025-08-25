@@ -20,7 +20,8 @@ class TrialToolCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Essais')
-            ->setEntityLabelInSingular('Essai');
+            ->setEntityLabelInSingular('Essai')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

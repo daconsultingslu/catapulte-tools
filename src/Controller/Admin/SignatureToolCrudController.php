@@ -22,7 +22,8 @@ class SignatureToolCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Émargements')
-            ->setEntityLabelInSingular('Émargement');
+            ->setEntityLabelInSingular('Émargement')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

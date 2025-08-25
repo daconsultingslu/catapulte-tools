@@ -21,7 +21,8 @@ class NumberPlateCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Véhicules')
-            ->setEntityLabelInSingular('Véhicule');
+            ->setEntityLabelInSingular('Véhicule')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

@@ -23,7 +23,8 @@ class ThemeCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Thèmes')
-            ->setEntityLabelInSingular('Thème');
+            ->setEntityLabelInSingular('Thème')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

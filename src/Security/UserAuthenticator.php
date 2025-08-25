@@ -48,10 +48,6 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
-        }
-
         if ($this->authorizationChecker->isGranted('ROLE_ADMIN')) {
             $redirection = new RedirectResponse($this->urlGenerator->generate('admin'));
         } else {

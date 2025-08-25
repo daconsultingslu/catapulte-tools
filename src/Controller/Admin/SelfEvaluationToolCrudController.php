@@ -22,7 +22,8 @@ class SelfEvaluationToolCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Auto-évaluations')
-            ->setEntityLabelInSingular('Auto-évaluation');
+            ->setEntityLabelInSingular('Auto-évaluation')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

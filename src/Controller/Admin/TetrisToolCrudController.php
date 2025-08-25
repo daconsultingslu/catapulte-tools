@@ -20,7 +20,8 @@ class TetrisToolCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Tetris')
-            ->setEntityLabelInSingular('Tetris');
+            ->setEntityLabelInSingular('Tetris')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

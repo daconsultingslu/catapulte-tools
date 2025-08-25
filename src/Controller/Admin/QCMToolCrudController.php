@@ -36,7 +36,8 @@ class QCMToolCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('QCM')
-            ->setEntityLabelInSingular('QCM');
+            ->setEntityLabelInSingular('QCM')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

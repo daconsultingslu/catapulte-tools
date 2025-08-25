@@ -21,7 +21,8 @@ class LevelCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Niveaux')
-            ->setEntityLabelInSingular('Niveau');
+            ->setEntityLabelInSingular('Niveau')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

@@ -21,7 +21,8 @@ class WordCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Mots')
-            ->setEntityLabelInSingular('Mot');
+            ->setEntityLabelInSingular('Mot')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable

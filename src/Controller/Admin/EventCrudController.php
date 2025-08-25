@@ -25,7 +25,8 @@ class EventCrudController extends AbstractCrudController
     {
         return $crud
             ->setEntityLabelInPlural('Événements')
-            ->setEntityLabelInSingular('Événement');
+            ->setEntityLabelInSingular('Événement')
+            ->setDefaultSort(['id' => 'DESC']);
     }
 
     public function configureFields(string $pageName): iterable
@@ -46,7 +47,7 @@ class EventCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setLabel('Date de fin'),
             AssociationField::new('brand')
-                ->setRequired(false)
+                ->setRequired(true)
                 ->setFormTypeOption('choice_label', 'name')
                 ->setLabel('Marque'),
             TextField::new('language')
