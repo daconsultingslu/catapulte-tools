@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TrialToolRestController extends AbstractController
 {
-    #[Route('/rest/trial/new', name: 'trial_tool_api', methods: ['POST', 'OPTIONS'])]
+    #[Route('/rest/trial/new', name: 'trial_tool_api', methods: ['POST'])]
     public function post(Request $request, LoggerInterface $logger, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
