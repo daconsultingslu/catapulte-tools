@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Event;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
@@ -54,5 +56,21 @@ class EventCrudController extends AbstractCrudController
                 ->setRequired(true)
                 ->setLabel('Langue'),
         ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        $accessEvent = Action::new('accessEvent', "Accéder à l'événement")
+            ->linkToRoute('event_show', function (Event $event): array {
+                return [
+                    'event' => $event->getId(),
+                ];
+            })
+            ->setHtmlAttributes(['target' => '_blank'])
+        ;
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $accessEvent)
+        ;
     }
 }
