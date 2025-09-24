@@ -117,12 +117,14 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-      $('.deleteUser').click(function (e) {
-        e.preventDefault();
+        document.addEventListener('DOMContentLoaded', function() {
+            $('.deleteUser').click(function (e) {
+                e.preventDefault();
 
-        if(confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-          window.location.href = $(this).attr('href');
-        }
-      });
+                if(confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+                window.location.href = $(this).attr('href');
+                }
+            });
+        });
     </script>
 {% endblock %}
