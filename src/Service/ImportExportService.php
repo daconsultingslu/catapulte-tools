@@ -222,7 +222,7 @@ class ImportExportService {
                 ->setCellValue('E' . $row, $user->getDetails());
 
                 $uid = $user->getId();
-                if(file_exists($exportPath.'signature1/'.$uid.'.jpg')) {
+                if(file_exists($exportPath.'signature1/'.$uid.'.jpg') && $this->isImageValid($exportPath.'signature1/'.$uid.'.jpg')) {
                     $drawing00 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                     //Check good path
                     $drawing00->setPath($exportPath.'signature1/'.$uid.'.jpg');
@@ -236,7 +236,7 @@ class ImportExportService {
                     ->setCellValue('E'.$row, 'ABSENT : '. $user->getUserData()->getFirstSignatureUserDataBySession($session)->getReason());
                 }
 
-                if(file_exists($exportPath.'signature2/'.$uid.'.jpg')) {
+                if(file_exists($exportPath.'signature2/'.$uid.'.jpg') && $this->isImageValid($exportPath.'signature2/'.$uid.'.jpg')) {
                     $drawing01 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                     //Check good path
                     $drawing01->setPath($exportPath.'signature2/'.$uid.'.jpg');
@@ -250,7 +250,7 @@ class ImportExportService {
                     ->setCellValue('E'.$row, 'ABSENT : '. $user->getUserData()->getFirstSignatureUserDataBySession($session)->getReason());
                 }
 
-                if(file_exists($exportPath.'decharge/'.$uid.'.jpg')) {
+                if(file_exists($exportPath.'decharge/'.$uid.'.jpg') && $this->isImageValid($exportPath.'decharge/'.$uid.'.jpg')) {
                     $drawing02 = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                     //Check good path
                     $drawing02->setPath($exportPath.'decharge/'.$uid.'.jpg');
@@ -889,5 +889,22 @@ class ImportExportService {
         }
 
         return $columns;
+    }
+
+    function isImageValid(string $filePath): bool
+    {
+        $imageInfo = @getimagesize($filePath);
+
+        if ($imageInfo === false) {
+            return false;
+        }
+
+        $allowedTypes = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP];
+
+        if (in_array($imageInfo[2], $allowedTypes)) {
+            return true;
+        }
+
+        return false;
     }
 }

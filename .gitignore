@@ -18,3 +18,5 @@ phpstan.neon
 /public/uploads/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+*--dump.sql
