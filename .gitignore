@@ -20,3 +20,5 @@ phpstan.neon
 ###< symfony/asset-mapper ###
 
 *--dump.sql
+
+.DS_Store
