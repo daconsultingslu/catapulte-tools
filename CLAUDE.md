@@ -30,6 +30,19 @@ composer install
 symfony server:start
 ```
 
+## Deployment
+
+Two separate Upsun projects are connected to this GitHub repository. Each one receives every branch, but only its production branch is deployed:
+
+| Upsun project | ID | Production branch |
+|---|---|---|
+| Tools - Catapulte | `glqe6ievjazws` | `main` |
+| Tools - Stellantis | `5vzr3ch63fuc2` | `stellantis` |
+
+- Deploy by updating the production branch on `origin` (GitHub). The GitHub integration forwards it to Upsun, so do not push to the `platform` or `upsun` remotes.
+- `main` only accepts changes through a pull request.
+- `main` and `stellantis` intentionally have different features. Never merge one into the other: apply shared changes (such as a runtime upgrade) to each branch separately.
+
 ## Architecture
 
 ### Core Domain
